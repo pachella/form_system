@@ -79,7 +79,7 @@ require_once __DIR__ . '/builder_sidebar.php';
 <!-- SortableJS para drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=10.2">
+<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=10.2.2">
 
 <div class="max-w-6xl mx-auto">
     <!-- Header -->
@@ -402,7 +402,7 @@ let currentRedirectButtonText = <?= json_encode($successBtRedirect) ?>;
 let currentHideBranding = <?= $hideBranding ?>;
 let currentShowScore = <?= $showScore ?>;
 </script>
-<script src="/modules/forms/builder/assets/builder.js?v=10.2"></script>
+<script src="/modules/forms/builder/assets/builder.js?v=10.2.2"></script>
 
 <?php
 require_once __DIR__ . '/../../../views/layout/footer.php';
