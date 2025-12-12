@@ -117,6 +117,18 @@ if ($totalResponses > 0) {
     }
 }
 
+// Buscar respostas parciais (não completadas)
+$partialResponsesStmt = $pdo->prepare("
+    SELECT pr.*
+    FROM partial_responses pr
+    WHERE pr.form_id = :form_id AND pr.completed = 0
+    ORDER BY pr.last_updated DESC
+    LIMIT 20
+");
+$partialResponsesStmt->execute([':form_id' => $formId]);
+$partialResponses = $partialResponsesStmt->fetchAll(PDO::FETCH_ASSOC);
+$totalPartialResponses = count($partialResponses);
+
 // Incluir o layout
 require_once __DIR__ . '/../../../views/layout/header.php';
 require_once __DIR__ . '/../builder/builder_sidebar.php';
@@ -259,13 +271,6 @@ require_once __DIR__ . '/../builder/builder_sidebar.php';
                 </p>
             </div>
             <div class="flex gap-2">
-                <a href="/forms/<?= $formId ?>/responses/partial"
-                   class="px-4 py-2 <?= PlanService::hasProAccess() ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-gray-400 hover:bg-gray-500' ?> text-white rounded-lg text-sm transition-colors">
-                    <i class="fas fa-hourglass-half mr-1"></i> Respostas Parciais
-                    <?php if (!PlanService::hasProAccess()): ?>
-                        <span class="ml-1">✨</span>
-                    <?php endif; ?>
-                </a>
                 <button onclick="exportResponses()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors">
                     <i class="fas fa-download mr-1"></i> Exportar CSV
                 </button>
@@ -445,6 +450,118 @@ require_once __DIR__ . '/../builder/builder_sidebar.php';
                     </div>
                 </div>
                 <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Seção de Respostas Parciais (PRO Feature) -->
+    <?php if ($totalPartialResponses > 0): ?>
+        <div class="mt-6">
+            <div class="bg-white dark:bg-zinc-800 rounded-lg shadow overflow-hidden">
+                <div class="p-6 border-b border-gray-200 dark:border-zinc-700">
+                    <?php if (!PlanService::hasProAccess()): ?>
+                        <!-- PRO Badge simples para usuários FREE -->
+                        <div class="pro-badge-simple">
+                            <i class="fas fa-crown"></i>
+                            <span>Recurso PRO</span>
+                        </div>
+                    <?php endif; ?>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-zinc-100 flex items-center gap-2">
+                        <i class="fas fa-hourglass-half text-yellow-600"></i>
+                        Formulários Abandonados
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-zinc-400 mt-1">
+                        Respostas parciais de <?= $totalPartialResponses ?> visitante<?= $totalPartialResponses > 1 ? 's' : '' ?> que começou<?= $totalPartialResponses > 1 ? 'aram' : 'ou' ?> mas não concluiu<?= $totalPartialResponses > 1 ? 'íram' : 'u' ?> o formulário
+                    </p>
+                </div>
+
+                <div class="overflow-x-auto <?= !PlanService::hasProAccess() ? 'pro-blur-chart' : '' ?>">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-700">
+                        <thead class="bg-gray-50 dark:bg-zinc-900">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                                    #
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                                    Primeira Resposta
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider hidden md:table-cell">
+                                    Última Atualização
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider hidden lg:table-cell">
+                                    Progresso
+                                </th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
+                                    Ações
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-zinc-700">
+                            <?php foreach ($partialResponses as $index => $partial): ?>
+                                <?php
+                                $answersData = json_decode($partial['answers_data'], true);
+                                $firstAnswer = 'Sem dados';
+                                if (!empty($answersData)) {
+                                    $firstAnswer = reset($answersData);
+                                    if (is_array($firstAnswer)) {
+                                        $firstAnswer = implode(', ', $firstAnswer);
+                                    }
+                                    $firstAnswer = mb_strlen($firstAnswer) > 50 ? mb_substr($firstAnswer, 0, 50) . '...' : $firstAnswer;
+                                }
+
+                                $progress = intval($partial['progress']);
+                                $progressColor = $progress < 30 ? 'text-red-600 dark:text-red-400' : ($progress < 70 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400');
+                                ?>
+                                <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
+                                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-zinc-100">
+                                        #<?= $totalPartialResponses - $index ?>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="text-sm text-gray-900 dark:text-zinc-100">
+                                            <?= htmlspecialchars($firstAnswer) ?>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-zinc-500">
+                                            <?= count($answersData) ?> campo(s) preenchido(s)
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 hidden md:table-cell">
+                                        <div class="text-sm text-gray-900 dark:text-zinc-100">
+                                            <?= date('d/m/Y', strtotime($partial['last_updated'])) ?>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-zinc-400">
+                                            <?= date('H:i', strtotime($partial['last_updated'])) ?>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 hidden lg:table-cell">
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-gray-200 dark:bg-zinc-700 rounded-full h-2 max-w-[100px]">
+                                                <div class="h-2 rounded-full" style="width: <?= $progress ?>%; background-color: #f59e0b;"></div>
+                                            </div>
+                                            <span class="text-sm font-medium <?= $progressColor ?>">
+                                                <?= $progress ?>%
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right text-sm space-x-2">
+                                        <button onclick="viewPartialResponse(<?= $partial['id'] ?>)"
+                                                class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
+                                        <?php if ($permissionManager->canDeleteRecord($form['user_id'])): ?>
+                                            <button onclick="deletePartialResponse(<?= $partial['id'] ?>)"
+                                                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                    title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     <?php endif; ?>
@@ -716,6 +833,93 @@ async function deleteResponse(responseId) {
 
 function exportResponses() {
     window.location.href = `/forms/<?= $formId ?>/responses/export`;
+}
+
+// ============================================
+// RESPOSTAS PARCIAIS
+// ============================================
+
+function viewPartialResponse(partialId) {
+    // Buscar detalhes da resposta parcial
+    fetch(`/modules/forms/responses/get_partial.php?id=${partialId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                Swal.fire('Erro', data.error || 'Erro ao carregar resposta', 'error');
+                return;
+            }
+
+            const partial = data.partial;
+            const answers = JSON.parse(partial.answers_data);
+
+            let answersHtml = '<div class="text-left space-y-3">';
+            for (const [field, answer] of Object.entries(answers)) {
+                const displayValue = Array.isArray(answer) ? answer.join(', ') : answer;
+                answersHtml += `
+                    <div class="border-b border-gray-200 dark:border-zinc-700 pb-2">
+                        <div class="text-xs text-gray-500 dark:text-zinc-500 mb-1">${field}</div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-zinc-100">${displayValue || '<em>Sem resposta</em>'}</div>
+                    </div>
+                `;
+            }
+            answersHtml += '</div>';
+
+            Swal.fire({
+                title: 'Resposta Parcial',
+                html: `
+                    <div class="mb-4 text-sm text-gray-600 dark:text-zinc-400">
+                        Última atualização: ${new Date(partial.last_updated).toLocaleString('pt-BR')}
+                    </div>
+                    ${answersHtml}
+                `,
+                width: '600px',
+                showCloseButton: true
+            });
+        })
+        .catch(error => {
+            Swal.fire('Erro', 'Erro de conexão', 'error');
+        });
+}
+
+async function deletePartialResponse(partialId) {
+    const result = await Swal.fire(getConfirmModalConfig(
+        'Tem certeza?',
+        'Deseja realmente excluir esta resposta parcial? Esta ação não pode ser desfeita.',
+        'Sim, excluir!'
+    ));
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const res = await fetch(`/modules/forms/responses/delete_partial.php?id=${partialId}`, {
+            method: 'POST'
+        });
+
+        const resultText = await res.text();
+
+        if (res.ok && resultText === 'success') {
+            await Swal.fire({
+                title: 'Excluída!',
+                text: 'Resposta parcial excluída com sucesso.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            window.location.reload();
+        } else {
+            Swal.fire({
+                title: 'Erro!',
+                text: 'Erro ao excluir: ' + resultText,
+                icon: 'error'
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            title: 'Erro!',
+            text: 'Erro de conexão',
+            icon: 'error'
+        });
+    }
 }
 </script>
 

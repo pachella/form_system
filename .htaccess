@@ -33,9 +33,6 @@ RewriteRule ^f/([0-9]+)$ /modules/forms/public/view.php?id=$1 [L,QSA]
 # Respostas de formulário: /forms/ID/responses
 RewriteRule ^forms/([0-9]+)/responses/?$ /modules/forms/responses/list.php?id=$1 [L,QSA]
 
-# Respostas parciais: /forms/ID/responses/partial
-RewriteRule ^forms/([0-9]+)/responses/partial$ /modules/forms/responses/partial.php?id=$1 [L,QSA]
-
 # Visualizar resposta: /forms/ID/responses/ID
 RewriteRule ^forms/([0-9]+)/responses/([0-9]+)$ /modules/forms/responses/view.php?id=$2 [L,QSA]
 
