@@ -186,7 +186,20 @@ try {
     ");
     $responseStmt->execute([':form_id' => $form_id]);
     $responseId = $pdo->lastInsertId();
-    
+
+    // Marcar resposta parcial como completa (se existir)
+    if (isset($_SESSION['partial_response_session_id'])) {
+        $markCompleteStmt = $pdo->prepare("
+            UPDATE partial_responses
+            SET completed = 1
+            WHERE form_id = :form_id AND session_id = :session_id
+        ");
+        $markCompleteStmt->execute([
+            'form_id' => $form_id,
+            'session_id' => $_SESSION['partial_response_session_id']
+        ]);
+    }
+
     // Salvar cada resposta individual
     $answerStmt = $pdo->prepare("
         INSERT INTO response_answers (response_id, field_id, answer, score)

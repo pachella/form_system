@@ -65,8 +65,8 @@ $responsesStmt = $pdo->prepare("
 $responsesStmt->execute([':form_id' => $formId]);
 $responses = $responsesStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Buscar total de campos para calcular % de preenchimento
-$fieldsStmt = $pdo->prepare("SELECT COUNT(*) as total FROM form_fields WHERE form_id = :form_id");
+// Buscar total de campos para calcular % de preenchimento (excluindo campos informativos)
+$fieldsStmt = $pdo->prepare("SELECT COUNT(*) as total FROM form_fields WHERE form_id = :form_id AND type NOT IN ('welcome', 'message')");
 $fieldsStmt->execute([':form_id' => $formId]);
 $totalFields = $fieldsStmt->fetch(PDO::FETCH_ASSOC)['total'];
 
@@ -259,6 +259,13 @@ require_once __DIR__ . '/../builder/builder_sidebar.php';
                 </p>
             </div>
             <div class="flex gap-2">
+                <a href="/forms/<?= $formId ?>/responses/partial"
+                   class="px-4 py-2 <?= PlanService::hasProAccess() ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-gray-400 hover:bg-gray-500' ?> text-white rounded-lg text-sm transition-colors">
+                    <i class="fas fa-hourglass-half mr-1"></i> Respostas Parciais
+                    <?php if (!PlanService::hasProAccess()): ?>
+                        <span class="ml-1">✨</span>
+                    <?php endif; ?>
+                </a>
                 <button onclick="exportResponses()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors">
                     <i class="fas fa-download mr-1"></i> Exportar CSV
                 </button>

@@ -981,3 +981,146 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// ============================================
+// AUTO-SAVE DE RESPOSTAS PARCIAIS (PRO FEATURE)
+// ============================================
+
+let autoSaveTimeout = null;
+let lastSavedData = null;
+
+/**
+ * Coleta todas as respostas atuais do formulário
+ */
+function collectCurrentAnswers() {
+    const formOneByOne = document.getElementById('formOneByOne');
+    const formAllAtOnce = document.getElementById('formAllAtOnce');
+    const form = formOneByOne || formAllAtOnce;
+
+    if (!form) return {};
+
+    const formData = new FormData(form);
+    const answers = {};
+    let lastFieldId = null;
+
+    for (const [key, value] of formData.entries()) {
+        if (key === 'form_id') continue;
+
+        // Extrair field_id do nome do campo (formato: field_123)
+        const match = key.match(/field_(\d+)/);
+        if (match) {
+            const fieldId = match[1];
+            lastFieldId = fieldId;
+
+            if (!answers[key]) {
+                answers[key] = value;
+            } else if (Array.isArray(answers[key])) {
+                answers[key].push(value);
+            } else {
+                answers[key] = [answers[key], value];
+            }
+        }
+    }
+
+    return { answers, lastFieldId };
+}
+
+/**
+ * Calcula o progresso atual (percentual de campos preenchidos)
+ */
+function calculateProgress() {
+    const { answers } = collectCurrentAnswers();
+    const totalFields = document.querySelectorAll('[data-field-id]').length;
+
+    if (totalFields === 0) return 0;
+
+    const answeredFields = Object.keys(answers).length;
+    return Math.round((answeredFields / totalFields) * 100);
+}
+
+/**
+ * Salva respostas parciais no servidor
+ */
+async function savePartialResponse() {
+    try {
+        const { answers, lastFieldId } = collectCurrentAnswers();
+        const progress = calculateProgress();
+
+        // Não salvar se não houver respostas
+        if (Object.keys(answers).length === 0) {
+            return;
+        }
+
+        // Verificar se os dados mudaram desde o último salvamento
+        const currentData = JSON.stringify(answers);
+        if (currentData === lastSavedData) {
+            return; // Nada mudou, não precisa salvar
+        }
+
+        const formElement = document.getElementById('formOneByOne') || document.getElementById('formAllAtOnce');
+        const formId = formElement ? formElement.querySelector('input[name="form_id"]').value : null;
+
+        if (!formId) return;
+
+        const response = await fetch('/modules/forms/public/save_partial.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                form_id: formId,
+                answers: answers,
+                progress: progress,
+                last_field_id: lastFieldId
+            })
+        });
+
+        if (response.ok) {
+            lastSavedData = currentData;
+            console.log('✓ Progresso salvo automaticamente');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar progresso:', error);
+    }
+}
+
+/**
+ * Agenda salvamento automático com debounce
+ */
+function scheduleAutoSave() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        savePartialResponse();
+    }, 2000); // Aguarda 2 segundos após última interação
+}
+
+// Adicionar listeners para auto-save
+document.addEventListener('DOMContentLoaded', function() {
+    // Salvar quando campos mudarem
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('input, textarea, select')) {
+            scheduleAutoSave();
+        }
+    });
+
+    // Salvar quando usuário digitar (com debounce)
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input, textarea')) {
+            scheduleAutoSave();
+        }
+    });
+
+    // Salvar quando avançar pergunta (modo one-by-one)
+    const originalNextQuestion = window.nextQuestion;
+    if (typeof originalNextQuestion === 'function') {
+        window.nextQuestion = function() {
+            savePartialResponse(); // Salva imediatamente ao avançar
+            originalNextQuestion.apply(this, arguments);
+        };
+    }
+
+    // Salvar antes de fechar/sair da página
+    window.addEventListener('beforeunload', function() {
+        savePartialResponse();
+    });
+});
