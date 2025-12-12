@@ -117,17 +117,25 @@ if ($totalResponses > 0) {
     }
 }
 
-// Buscar respostas parciais (não completadas)
-$partialResponsesStmt = $pdo->prepare("
-    SELECT pr.*
-    FROM partial_responses pr
-    WHERE pr.form_id = :form_id AND pr.completed = 0
-    ORDER BY pr.last_updated DESC
-    LIMIT 20
-");
-$partialResponsesStmt->execute([':form_id' => $formId]);
-$partialResponses = $partialResponsesStmt->fetchAll(PDO::FETCH_ASSOC);
-$totalPartialResponses = count($partialResponses);
+// Buscar respostas parciais (não completadas) - com tratamento de erro caso tabela não exista
+$partialResponses = [];
+$totalPartialResponses = 0;
+
+try {
+    $partialResponsesStmt = $pdo->prepare("
+        SELECT pr.*
+        FROM partial_responses pr
+        WHERE pr.form_id = :form_id AND pr.completed = 0
+        ORDER BY pr.last_updated DESC
+        LIMIT 20
+    ");
+    $partialResponsesStmt->execute([':form_id' => $formId]);
+    $partialResponses = $partialResponsesStmt->fetchAll(PDO::FETCH_ASSOC);
+    $totalPartialResponses = count($partialResponses);
+} catch (PDOException $e) {
+    // Tabela ainda não existe - ignorar silenciosamente
+    error_log('Tabela partial_responses não encontrada: ' . $e->getMessage());
+}
 
 // Incluir o layout
 require_once __DIR__ . '/../../../views/layout/header.php';
