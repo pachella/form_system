@@ -187,17 +187,22 @@ try {
     $responseStmt->execute([':form_id' => $form_id]);
     $responseId = $pdo->lastInsertId();
 
-    // Marcar resposta parcial como completa (se existir)
+    // Marcar resposta parcial como completa (se existir) - com tratamento de erro
     if (isset($_SESSION['partial_response_session_id'])) {
-        $markCompleteStmt = $pdo->prepare("
-            UPDATE partial_responses
-            SET completed = 1
-            WHERE form_id = :form_id AND session_id = :session_id
-        ");
-        $markCompleteStmt->execute([
-            'form_id' => $form_id,
-            'session_id' => $_SESSION['partial_response_session_id']
-        ]);
+        try {
+            $markCompleteStmt = $pdo->prepare("
+                UPDATE partial_responses
+                SET completed = 1
+                WHERE form_id = :form_id AND session_id = :session_id
+            ");
+            $markCompleteStmt->execute([
+                'form_id' => $form_id,
+                'session_id' => $_SESSION['partial_response_session_id']
+            ]);
+        } catch (PDOException $e) {
+            // Tabela não existe ainda - ignorar silenciosamente
+            error_log('Tabela partial_responses não encontrada: ' . $e->getMessage());
+        }
     }
 
     // Salvar cada resposta individual
