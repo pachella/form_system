@@ -2393,6 +2393,21 @@ async function editFlow(flowId) {
                         </button>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-zinc-300">
+                            Ir para (após completar o fluxo)
+                        </label>
+                        <select id="flowExitToField" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
+                            <option value="">Continuar normalmente (próximo campo)</option>
+                            ${availableFields.map(f =>
+                                `<option value="${f.id}" ${flow.exit_to_field_id == f.id ? 'selected' : ''}>${f.label}</option>`
+                            ).join('')}
+                        </select>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                            Escolha para qual campo saltar após o usuário completar este fluxo
+                        </p>
+                    </div>
+
                     <div class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-3">
                         <p class="text-xs text-purple-800 dark:text-purple-200">
                             <i class="fas fa-info-circle mr-1"></i>
@@ -2447,6 +2462,7 @@ async function editFlow(flowId) {
                 }
 
                 const conditionsType = document.getElementById('flowConditionsType').value;
+                const exitToFieldId = document.getElementById('flowExitToField').value;
                 const conditions = [];
 
                 document.querySelectorAll('.flow-condition').forEach(condEl => {
@@ -2463,7 +2479,7 @@ async function editFlow(flowId) {
                     }
                 });
 
-                return { label, conditionsType, conditions };
+                return { label, conditionsType, conditions, exitToFieldId };
             }
         });
 
@@ -2474,6 +2490,7 @@ async function editFlow(flowId) {
             formData.append('label', result.value.label);
             formData.append('conditions', JSON.stringify(result.value.conditions));
             formData.append('conditions_type', result.value.conditionsType);
+            formData.append('exit_to_field_id', result.value.exitToFieldId);
 
             const saveResponse = await fetch('/modules/forms/builder/save_flow.php', {
                 method: 'POST',

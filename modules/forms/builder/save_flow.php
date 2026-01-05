@@ -27,6 +27,7 @@ try {
     $label = trim($_POST['label'] ?? 'Novo Fluxo');
     $conditions = trim($_POST['conditions'] ?? '[]');
     $conditions_type = trim($_POST['conditions_type'] ?? 'all');
+    $exit_to_field_id = !empty($_POST['exit_to_field_id']) ? intval($_POST['exit_to_field_id']) : null;
 
     // Validar JSON de condições
     $conditionsArray = json_decode($conditions, true);
@@ -54,13 +55,15 @@ try {
             UPDATE form_flows
             SET label = :label,
                 conditions = :conditions,
-                conditions_type = :conditions_type
+                conditions_type = :conditions_type,
+                exit_to_field_id = :exit_to_field_id
             WHERE id = :flow_id AND form_id = :form_id
         ");
         $stmt->execute([
             ':label' => $label,
             ':conditions' => $conditions,
             ':conditions_type' => $conditions_type,
+            ':exit_to_field_id' => $exit_to_field_id,
             ':flow_id' => $flow_id,
             ':form_id' => $form_id
         ]);
@@ -79,15 +82,16 @@ try {
         $nextOrder = ($maxOrder['max_order'] ?? 0) + 1;
 
         $stmt = $pdo->prepare("
-            INSERT INTO form_flows (form_id, label, conditions, conditions_type, order_index)
-            VALUES (:form_id, :label, :conditions, :conditions_type, :order_index)
+            INSERT INTO form_flows (form_id, label, conditions, conditions_type, order_index, exit_to_field_id)
+            VALUES (:form_id, :label, :conditions, :conditions_type, :order_index, :exit_to_field_id)
         ");
         $stmt->execute([
             ':form_id' => $form_id,
             ':label' => $label,
             ':conditions' => $conditions,
             ':conditions_type' => $conditions_type,
-            ':order_index' => $nextOrder
+            ':order_index' => $nextOrder,
+            ':exit_to_field_id' => $exit_to_field_id
         ]);
 
         $newFlowId = $pdo->lastInsertId();
