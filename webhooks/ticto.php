@@ -47,11 +47,10 @@ try {
 
     // Processar evento
     switch ($event) {
-        case 'subscription.created':
-        case 'subscription.activated':
-        case 'subscription.renewed':
-        case 'charge.approved':
-        case 'payment.approved':
+        case 'Venda Realizada':
+        case '[Assinatura] - Período de Testes Iniciado':
+        case '[Assinatura] - Retomada':
+        case '[Assinatura] - Extendida':
             // ATIVAR PRO POR 30 DIAS
             $expiresAt = date('Y-m-d H:i:s', strtotime('+30 days'));
 
@@ -78,10 +77,10 @@ try {
             ]);
             break;
 
-        case 'subscription.cancelled':
-        case 'subscription.expired':
-        case 'charge.failed':
-        case 'payment.failed':
+        case '[Assinatura] - Cancelada':
+        case '[Assinatura] - Encerrada (Todas as Cobranças Finalizadas)':
+        case 'Chargeback':
+        case 'Reembolso':
             // DESATIVAR PRO
             $updateStmt = $pdo->prepare("
                 UPDATE users
