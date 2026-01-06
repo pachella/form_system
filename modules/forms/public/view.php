@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Header UTF-8 para suportar emojis
+header('Content-Type: text/html; charset=UTF-8');
+
 // Headers anti-cache para garantir que a página sempre seja recarregada
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);

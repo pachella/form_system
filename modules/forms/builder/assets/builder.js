@@ -2500,13 +2500,46 @@ async function duplicateFlow(flowId) {
         });
     }
 }
-// Mostrar alerta de recurso PRO
+// Mostrar alerta de recurso PRO padronizado
 function showProFeature() {
     Swal.fire({
-        title: 'Recurso PRO',
-        text: 'Esta funcionalidade está disponível apenas para planos PRO e FULL.',
+        title: '✨ Desbloqueie todo o potencial do Formtalk',
+        html: `
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                Este recurso está disponível no plano PRO, que inclui:
+            </p>
+            <ul class="text-left text-sm text-gray-600 dark:text-gray-300 space-y-2 mb-4">
+                <li>✓ Formulários ilimitados</li>
+                <li>✓ Respostas ilimitadas</li>
+                <li>✓ Remover marca Formtalk</li>
+                <li>✓ Redirecionamento customizado</li>
+                <li>✓ Lógica condicional avançada</li>
+                <li>✓ Sistema de pontuação</li>
+                <li>✓ Suporte prioritário</li>
+            </ul>
+            <p class="text-purple-600 dark:text-purple-400 font-semibold">
+                Experimente grátis por 30 dias!
+            </p>
+        `,
         icon: 'info',
-        confirmButtonText: 'Entendi',
-        confirmButtonColor: '#6366f1'
+        iconColor: '#a855f7',
+        showCancelButton: true,
+        confirmButtonText: '🚀 Testar PRO por 30 dias',
+        cancelButtonText: 'Agora não',
+        confirmButtonColor: '#a855f7',
+        cancelButtonColor: '#6b7280',
+        customClass: {
+            popup: 'rounded-xl',
+            confirmButton: 'px-6 py-2.5 rounded-lg font-semibold',
+            cancelButton: 'px-6 py-2.5 rounded-lg'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Redirecionar para checkout com dados pré-populados
+            const userName = typeof USER_NAME !== 'undefined' ? USER_NAME : '';
+            const userEmail = typeof USER_EMAIL !== 'undefined' ? USER_EMAIL : '';
+            const checkoutUrl = `https://checkout.ticto.app/OEDEF53ED?name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
+            window.open(checkoutUrl, '_blank');
+        }
     });
 }

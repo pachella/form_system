@@ -413,6 +413,8 @@ const FORM_ID = <?= $formId ?>;
 const FORM_PUBLIC_URL = <?= json_encode(getPublicFormUrl($formId)) ?>;
 const IS_PRO_USER = <?= PlanService::hasProAccess() ? 'true' : 'false' ?>;
 const USER_PLAN = "<?= PlanService::getCurrentPlan() ?>";
+const USER_NAME = "<?= htmlspecialchars($_SESSION['user_name'] ?? '', ENT_QUOTES) ?>";
+const USER_EMAIL = "<?= htmlspecialchars($_SESSION['user_email'] ?? '', ENT_QUOTES) ?>";
 let currentRedirectEnabled = <?= $successRedirectEnabled ?>;
 let currentRedirectUrl = <?= json_encode($successRedirectUrl) ?>;
 let currentRedirectType = <?= json_encode($successRedirectType) ?>;

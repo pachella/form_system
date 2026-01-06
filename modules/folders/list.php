@@ -308,24 +308,7 @@ function openCreateFolderModal() {
     setTimeout(() => selectIcon('folder'), 100);
 }
 
-// Mostrar alerta de recurso PRO
-function showProFeature() {
-    Swal.fire({
-        title: '✨ Recurso PRO',
-        html: 'Personalize cores e ícones das suas pastas com o plano PRO!',
-        icon: 'info',
-        confirmButtonText: 'Fazer Upgrade',
-        showCancelButton: true,
-        cancelButtonText: 'Agora não',
-        confirmButtonColor: '#4EA44B',
-        cancelButtonColor: '#9ca3af',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = '/pricing';
-        }
-    });
-}
+// Função showProFeature() agora é global (carregada do pro-features.js)
 
 // Selecionar ícone
 function selectIcon(icon) {
@@ -504,35 +487,7 @@ async function deleteFolder(folderId) {
     }
 }
 
-// Modal de upgrade
-function showUpgradeModal() {
-    Swal.fire({
-        title: '✨ Upgrade para PRO',
-        html: `
-            <div class="text-left">
-                <p class="mb-4">Você atingiu o limite de <strong>3 pastas</strong> do plano FREE.</p>
-                <p class="mb-4">Com o plano <strong style="color: #4EA44B;">PRO</strong>, você terá:</p>
-                <ul class="list-disc list-inside space-y-2 mb-4">
-                    <li>✅ Pastas ilimitadas</li>
-                    <li>✅ Cores personalizadas</li>
-                    <li>✅ Mais ícones disponíveis</li>
-                    <li>✅ E muito mais!</li>
-                </ul>
-            </div>
-        `,
-        icon: 'info',
-        confirmButtonText: 'Fazer Upgrade',
-        showCancelButton: true,
-        cancelButtonText: 'Agora não',
-        confirmButtonColor: '#4EA44B',
-        cancelButtonColor: '#9ca3af',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = '/pricing';
-        }
-    });
-}
+// Função showUpgradeModal() agora é global (carregada do pro-features.js)
 </script>
 
 <?php
