@@ -26,10 +26,13 @@ if (!$payload) {
 require_once(__DIR__ . "/../core/db.php");
 
 try {
-    // Extrair dados do webhook
-    // AJUSTE OS CAMPOS CONFORME O FORMATO REAL DA TICTO
-    $event = $payload['event'] ?? $payload['type'] ?? '';
-    $customerEmail = $payload['email'] ?? $payload['customer']['email'] ?? '';
+    // Extrair dados do webhook (formato real da Ticto)
+    $status = $payload['status'] ?? '';
+    $customerEmail = $payload['customer']['email'] ?? '';
+    $customerName = $payload['customer']['name'] ?? '';
+
+    // Definir "evento" baseado no status
+    $event = $status;
 
     file_put_contents($logFile, date('[Y-m-d H:i:s] ') . "Processando evento: {$event} para {$customerEmail}\n", FILE_APPEND);
 
@@ -45,12 +48,11 @@ try {
         exit;
     }
 
-    // Processar evento
-    switch ($event) {
-        case 'Venda Realizada':
-        case '[Assinatura] - Período de Testes Iniciado':
-        case '[Assinatura] - Retomada':
-        case '[Assinatura] - Extendida':
+    // Processar evento baseado no status
+    switch ($status) {
+        case 'paid':
+        case 'approved':
+        case 'active':
             // ATIVAR PRO POR 30 DIAS
             $expiresAt = date('Y-m-d H:i:s', strtotime('+30 days'));
 
@@ -77,10 +79,11 @@ try {
             ]);
             break;
 
-        case '[Assinatura] - Cancelada':
-        case '[Assinatura] - Encerrada (Todas as Cobranças Finalizadas)':
-        case 'Chargeback':
-        case 'Reembolso':
+        case 'cancelled':
+        case 'canceled':
+        case 'refunded':
+        case 'chargeback':
+        case 'expired':
             // DESATIVAR PRO
             $updateStmt = $pdo->prepare("
                 UPDATE users
