@@ -15,7 +15,7 @@ if ($conditionsCount > 0) {
 <div class="flow-divider-card bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4"
      data-flow-id="<?= $flow['id'] ?>"
      data-type="flow">
-    <div class="flex items-start justify-between">
+    <div class="flex items-start justify-between mb-3">
         <div class="flex items-start gap-3 flex-1">
             <div class="text-purple-600 dark:text-purple-400 mt-1">
                 <i class="fas fa-code-branch text-xl"></i>
@@ -34,7 +34,8 @@ if ($conditionsCount > 0) {
                     <?= $conditionsText ?>
                 </p>
                 <p class="text-xs text-purple-600 dark:text-purple-400 italic">
-                    Se as condições forem atendidas, o formulário pulará para este ponto
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Arraste campos para dentro deste card para adicioná-los ao fluxo
                 </p>
             </div>
         </div>
@@ -56,5 +57,60 @@ if ($conditionsCount > 0) {
                 <i class="fas fa-trash"></i>
             </button>
         </div>
+    </div>
+
+    <!-- Drop Zone para campos do fluxo -->
+    <div class="flow-fields-container min-h-[60px] border-2 border-dashed border-purple-300 dark:border-purple-600 rounded-lg p-3 bg-white dark:bg-zinc-800 space-y-3"
+         data-flow-id="<?= $flow['id'] ?>">
+        <?php if (empty($flowFields)): ?>
+            <div class="flow-empty-state text-center text-purple-400 dark:text-purple-500 text-sm py-2">
+                <i class="fas fa-hand-pointer mr-1"></i>
+                Arraste campos aqui
+            </div>
+        <?php else: ?>
+            <?php foreach ($flowFields as $field): ?>
+                <?php
+                $field_rendered = false;
+
+                // Carregar renderização de campos de texto básicos
+                include __DIR__ . '/text_fields.php';
+
+                // Carregar renderização de campos de documentos (CPF/CNPJ)
+                if (!$field_rendered) {
+                    include __DIR__ . '/document_fields.php';
+                }
+
+                // Carregar renderização de campos de múltipla escolha
+                if (!$field_rendered) {
+                    include __DIR__ . '/radio_fields.php';
+                }
+
+                // Carregar renderização de campos de seleção (dropdown)
+                if (!$field_rendered) {
+                    include __DIR__ . '/select_fields.php';
+                }
+
+                // Carregar renderização de campos especiais
+                if (!$field_rendered) {
+                    include __DIR__ . '/special_fields.php';
+                }
+
+                // Carregar renderização de campos de arquivo e termos
+                if (!$field_rendered) {
+                    include __DIR__ . '/file_terms_fields.php';
+                }
+
+                // Se chegou aqui, tipo de campo desconhecido
+                if (!$field_rendered):
+                ?>
+                    <div class="field-item bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4" data-field-id="<?= $field['id'] ?>">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-exclamation-triangle text-red-600"></i>
+                            <span class="text-red-600 dark:text-red-400">Tipo de campo desconhecido: <?= htmlspecialchars($field['type']) ?></span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </div>

@@ -35,16 +35,16 @@ require_once(__DIR__ . "/../../core/PlanService.php");
   <!-- JS do SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- CSS Global Supersites -->
-  <link rel="stylesheet" href="/scripts/css/global.css?v=10.2.9">
+  <link rel="stylesheet" href="/scripts/css/global.css?v=10.3.0">
 
   <!-- Scripts globais (ORDEM CORRETA) -->
-  <script src="/scripts/js/global/theme.js?v=10.2.9"></script>
-  <script src="/scripts/js/global/ui.js?v=10.2.9"></script>
-  <script src="/scripts/js/global/modals.js?v=10.2.9"></script>
-  <script src="/scripts/js/global/helpers.js?v=10.2.9"></script>
+  <script src="/scripts/js/global/theme.js?v=10.3.0"></script>
+  <script src="/scripts/js/global/ui.js?v=10.3.0"></script>
+  <script src="/scripts/js/global/modals.js?v=10.3.0"></script>
+  <script src="/scripts/js/global/helpers.js?v=10.3.0"></script>
 
   <!-- Script de formulários (DEPOIS dos globais) -->
-  <script src="/modules/forms/assets/admin.js?v=10.2.9"></script>
+  <script src="/modules/forms/assets/admin.js?v=10.3.0"></script>
   
   <style>
     /* Remover TODAS as transições do tema dark (instantâneo) */

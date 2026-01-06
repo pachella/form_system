@@ -79,7 +79,7 @@ require_once __DIR__ . '/builder_sidebar.php';
 <!-- SortableJS para drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=10.2.9">
+<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=10.3.0">
 
 <div class="max-w-6xl mx-auto">
     <!-- Header -->
@@ -163,32 +163,44 @@ require_once __DIR__ . '/builder_sidebar.php';
                         </div>
                     <?php else: ?>
                         <?php
-                        // Mesclar campos e fluxos para renderizar ordenadamente
-                        $items = [];
+                        // Separar campos por flow_id
+                        $fieldsWithoutFlow = []; // Campos que não pertencem a nenhum fluxo
+                        $fieldsByFlow = []; // Campos agrupados por flow_id
+
                         foreach ($fields as $field) {
+                            if (empty($field['flow_id'])) {
+                                $fieldsWithoutFlow[] = $field;
+                            } else {
+                                if (!isset($fieldsByFlow[$field['flow_id']])) {
+                                    $fieldsByFlow[$field['flow_id']] = [];
+                                }
+                                $fieldsByFlow[$field['flow_id']][] = $field;
+                            }
+                        }
+
+                        // Mesclar campos livres e fluxos para renderizar ordenadamente
+                        $items = [];
+                        foreach ($fieldsWithoutFlow as $field) {
                             $items[] = ['type' => 'field', 'data' => $field, 'order' => $field['order_index']];
                         }
                         foreach ($flows as $flow) {
                             $items[] = ['type' => 'flow', 'data' => $flow, 'order' => $flow['order_index']];
                         }
+
                         // Ordenar por order_index
                         usort($items, function($a, $b) {
                             return $a['order'] - $b['order'];
                         });
 
-                        // Variável para rastrear se estamos dentro de um fluxo
-                        $insideFlow = false;
-
                         foreach ($items as $item):
                             if ($item['type'] === 'flow'):
-                                $insideFlow = true; // Após um fluxo, os campos estão "dentro" dele
                                 $flow = $item['data'];
+                                $flowId = $flow['id'];
+                                $flowFields = $fieldsByFlow[$flowId] ?? [];
                                 include __DIR__ . '/render/flow_divider.php';
                             else:
                                 $field = $item['data'];
-                                $fieldInFlow = $insideFlow; // Passa a variável para os includes
-                        ?>
-                            <div class="<?= $fieldInFlow ? 'field-in-flow' : '' ?>">
+                            ?>
                             <?php
                             // ============================================
                             // RENDERIZAÇÃO MODULAR DE CAMPOS
@@ -234,7 +246,6 @@ require_once __DIR__ . '/builder_sidebar.php';
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            </div>
                             <?php endif; // fim do if type === field ?>
                         <?php endforeach; ?>
 
@@ -409,7 +420,7 @@ let currentRedirectButtonText = <?= json_encode($successBtRedirect) ?>;
 let currentHideBranding = <?= $hideBranding ?>;
 let currentShowScore = <?= $showScore ?>;
 </script>
-<script src="/modules/forms/builder/assets/builder.js?v=10.2.9"></script>
+<script src="/modules/forms/builder/assets/builder.js?v=10.3.0"></script>
 
 <?php
 require_once __DIR__ . '/../../../views/layout/footer.php';

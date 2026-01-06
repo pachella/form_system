@@ -208,6 +208,7 @@ const fieldsList = document.getElementById('fieldsList');
 if (fieldsList) {
     new Sortable(fieldsList, {
         animation: 150,
+        group: 'shared-fields', // Permitir compartilhamento com flow containers
         handle: '.field-item, .flow-divider-card',
         ghostClass: 'opacity-50',
         filter: function(evt, target) {
@@ -228,10 +229,100 @@ if (fieldsList) {
 
             return false; // Permitir drag
         },
-        onEnd: function() {
+        onEnd: async function(evt) {
             document.getElementById('emptyState')?.remove();
+
+            // Verificar se o campo foi solto em um flow container
+            const toContainer = evt.to;
+            const item = evt.item;
+            const fieldId = item.dataset.fieldId;
+
+            if (toContainer.classList.contains('flow-fields-container')) {
+                // Campo foi arrastado para dentro de um fluxo
+                const flowId = toContainer.dataset.flowId;
+                console.log(`📥 Campo ${fieldId} arrastado para fluxo ${flowId}`);
+                await updateFieldFlow(fieldId, flowId);
+            } else if (evt.from.classList.contains('flow-fields-container')) {
+                // Campo foi removido de um fluxo
+                console.log(`📤 Campo ${fieldId} removido do fluxo`);
+                await updateFieldFlow(fieldId, null);
+            }
+
             // Auto-save ao arrastar
             saveFieldsOrder();
+        }
+    });
+
+    // Inicializar Sortable para cada flow container
+    document.querySelectorAll('.flow-fields-container').forEach(container => {
+        new Sortable(container, {
+            animation: 150,
+            group: 'shared-fields', // Mesmo grupo para permitir transferência
+            handle: '.field-item',
+            ghostClass: 'opacity-50',
+            onEnd: async function(evt) {
+                const toContainer = evt.to;
+                const fromContainer = evt.from;
+                const item = evt.item;
+                const fieldId = item.dataset.fieldId;
+
+                if (toContainer.classList.contains('flow-fields-container')) {
+                    const flowId = toContainer.dataset.flowId;
+                    console.log(`📥 Campo ${fieldId} arrastado para fluxo ${flowId}`);
+                    await updateFieldFlow(fieldId, flowId);
+                } else {
+                    // Removido do fluxo
+                    console.log(`📤 Campo ${fieldId} removido do fluxo`);
+                    await updateFieldFlow(fieldId, null);
+                }
+
+                // Atualizar estado vazio dos containers
+                updateFlowEmptyStates();
+                saveFieldsOrder();
+            }
+        });
+    });
+}
+
+// Função para atualizar o flow_id de um campo
+async function updateFieldFlow(fieldId, flowId) {
+    try {
+        const formData = new FormData();
+        formData.append('field_id', fieldId);
+        formData.append('flow_id', flowId || '');
+
+        const response = await fetch('/modules/forms/builder/update_field_flow.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Erro ao atualizar campo');
+        }
+
+        console.log('✅ Flow ID atualizado:', data.message);
+    } catch (error) {
+        console.error('❌ Erro ao atualizar flow ID:', error);
+        Swal.fire({
+            title: 'Erro!',
+            text: error.message,
+            icon: 'error'
+        });
+        // Recarregar página para reverter mudança visual
+        location.reload();
+    }
+}
+
+// Atualizar estados vazios dos flow containers
+function updateFlowEmptyStates() {
+    document.querySelectorAll('.flow-fields-container').forEach(container => {
+        const emptyState = container.querySelector('.flow-empty-state');
+        const hasFields = container.querySelectorAll('.field-item').length > 0;
+
+        if (emptyState) {
+            emptyState.style.display = hasFields ? 'none' : 'block';
         }
     });
 }
