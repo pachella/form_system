@@ -2313,6 +2313,14 @@ async function editFlow(flowId) {
         const flow = flowData.flow;
         const conditions = flow.conditions ? JSON.parse(flow.conditions) : [];
 
+        console.log('📥 Fluxo carregado:', {
+            id: flow.id,
+            label: flow.label,
+            exit_to_field_id: flow.exit_to_field_id,
+            conditions_type: flow.conditions_type,
+            conditions: conditions
+        });
+
         // Buscar campos disponíveis para condições
         const fieldsResponse = await fetch(`/modules/forms/builder/get_fields_for_flow.php?form_id=${FORM_ID}`);
         const fieldsData = await fieldsResponse.json();
@@ -2322,6 +2330,8 @@ async function editFlow(flowId) {
         }
 
         const availableFields = fieldsData.fields || [];
+
+        console.log('📋 Campos disponíveis para salto:', availableFields.length, 'campos');
 
         // Criar HTML do modal
         let conditionsHTML = '';
@@ -2484,6 +2494,14 @@ async function editFlow(flowId) {
         });
 
         if (result.isConfirmed) {
+            console.log('💾 Salvando fluxo:', {
+                flowId: flowId,
+                label: result.value.label,
+                conditionsType: result.value.conditionsType,
+                exitToFieldId: result.value.exitToFieldId,
+                conditions: result.value.conditions
+            });
+
             const formData = new FormData();
             formData.append('form_id', FORM_ID);
             formData.append('flow_id', flowId);
