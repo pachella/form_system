@@ -22,6 +22,9 @@ $redirectButtonText = $_POST['success_bt_redirect'] ?? 'Continuar';
 // Campo de exibir pontuação
 $showScore = isset($_POST['show_score']) ? (int)$_POST['show_score'] : 0;
 
+// Campo de remover marca Formtalk
+$hideBranding = isset($_POST['hide_formtalk_branding']) ? (int)$_POST['hide_formtalk_branding'] : 0;
+
 if (!$formId) {
     echo "ID do formulário não informado";
     http_response_code(400);
@@ -65,14 +68,15 @@ try {
                 success_redirect_url = :success_redirect_url,
                 success_redirect_type = :success_redirect_type,
                 success_bt_redirect = :success_bt_redirect,
-                show_score = :show_score
+                show_score = :show_score,
+                hide_formtalk_branding = :hide_formtalk_branding
                 WHERE form_id = :form_id";
     } else {
         // INSERT - criar personalização com valores padrão e as novas mensagens
         $sql = "INSERT INTO form_customizations
-                (form_id, background_color, text_color, primary_color, button_text_color, background_image, logo, button_radius, font_family, success_message_title, success_message_description, success_redirect_enabled, success_redirect_url, success_redirect_type, success_bt_redirect, show_score)
+                (form_id, background_color, text_color, primary_color, button_text_color, background_image, logo, button_radius, font_family, success_message_title, success_message_description, success_redirect_enabled, success_redirect_url, success_redirect_type, success_bt_redirect, show_score, hide_formtalk_branding)
                 VALUES
-                (:form_id, :background_color, :text_color, :primary_color, :button_text_color, :background_image, :logo, :button_radius, :font_family, :success_message_title, :success_message_description, :success_redirect_enabled, :success_redirect_url, :success_redirect_type, :success_bt_redirect, :show_score)";
+                (:form_id, :background_color, :text_color, :primary_color, :button_text_color, :background_image, :logo, :button_radius, :font_family, :success_message_title, :success_message_description, :success_redirect_enabled, :success_redirect_url, :success_redirect_type, :success_bt_redirect, :show_score, :hide_formtalk_branding)";
     }
 
     $stmt = $pdo->prepare($sql);
@@ -84,6 +88,7 @@ try {
     $stmt->bindValue(':success_redirect_type', $redirectType);
     $stmt->bindValue(':success_bt_redirect', $redirectButtonText);
     $stmt->bindValue(':show_score', $showScore, PDO::PARAM_INT);
+    $stmt->bindValue(':hide_formtalk_branding', $hideBranding, PDO::PARAM_INT);
 
     if (!$exists) {
         // Inserir campos com valores padrão para nova customização

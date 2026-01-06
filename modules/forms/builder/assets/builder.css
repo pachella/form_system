@@ -173,3 +173,8 @@
         margin: 0 2.5px;
         display: block;
     }
+
+    /* Margem esquerda para campos dentro de fluxos */
+    .field-in-flow {
+        margin-left: 20px;
+    }

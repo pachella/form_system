@@ -79,7 +79,7 @@ require_once __DIR__ . '/builder_sidebar.php';
 <!-- SortableJS para drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=10.2.8">
+<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=10.2.9">
 
 <div class="max-w-6xl mx-auto">
     <!-- Header -->
@@ -176,13 +176,19 @@ require_once __DIR__ . '/builder_sidebar.php';
                             return $a['order'] - $b['order'];
                         });
 
+                        // Variável para rastrear se estamos dentro de um fluxo
+                        $insideFlow = false;
+
                         foreach ($items as $item):
                             if ($item['type'] === 'flow'):
+                                $insideFlow = true; // Após um fluxo, os campos estão "dentro" dele
                                 $flow = $item['data'];
                                 include __DIR__ . '/render/flow_divider.php';
                             else:
                                 $field = $item['data'];
+                                $fieldInFlow = $insideFlow; // Passa a variável para os includes
                         ?>
+                            <div class="<?= $fieldInFlow ? 'field-in-flow' : '' ?>">
                             <?php
                             // ============================================
                             // RENDERIZAÇÃO MODULAR DE CAMPOS
@@ -228,6 +234,7 @@ require_once __DIR__ . '/builder_sidebar.php';
                                     </div>
                                 </div>
                             <?php endif; ?>
+                            </div>
                             <?php endif; // fim do if type === field ?>
                         <?php endforeach; ?>
 
@@ -402,7 +409,7 @@ let currentRedirectButtonText = <?= json_encode($successBtRedirect) ?>;
 let currentHideBranding = <?= $hideBranding ?>;
 let currentShowScore = <?= $showScore ?>;
 </script>
-<script src="/modules/forms/builder/assets/builder.js?v=10.2.8"></script>
+<script src="/modules/forms/builder/assets/builder.js?v=10.2.9"></script>
 
 <?php
 require_once __DIR__ . '/../../../views/layout/footer.php';
