@@ -12,7 +12,6 @@ const flows = flowsData ? JSON.parse(flowsData) : [];
 
 // Rastrear qual fluxo está ativo atualmente
 let activeFlowId = null;
-let activeFlowOrderIndex = null;
 
 // ============================================
 // FUNÇÃO PARA GERAR MENSAGEM DE SUCESSO COM REDIRECIONAMENTO
@@ -332,9 +331,13 @@ document.querySelectorAll('.file-upload-area').forEach(area => {
 // ==================== NAVEGAÇÃO ONE-BY-ONE ====================
 
 // Função para verificar e processar fluxos condicionais
+/**
+ * Verifica se algum fluxo deve ser ativado baseado nas respostas atuais
+ * Retorna o flow_id do fluxo ativado, ou null se nenhum fluxo deve ser ativado
+ */
 function checkFlows() {
     if (!flows || flows.length === 0) {
-        return -1; // Nenhum fluxo configurado
+        return null;
     }
 
     // Coletar todas as respostas do formulário até o momento
@@ -357,10 +360,8 @@ function checkFlows() {
         }
     }
 
-    // Verificar cada fluxo em ordem (do menor order_index para o maior)
-    const sortedFlows = [...flows].sort((a, b) => parseInt(a.order_index) - parseInt(b.order_index));
-
-    for (const flow of sortedFlows) {
+    // Verificar cada fluxo em ordem
+    for (const flow of flows) {
         const conditions = flow.conditions ? JSON.parse(flow.conditions) : [];
         const conditionsType = flow.conditions_type || 'all';
 
@@ -369,25 +370,30 @@ function checkFlows() {
         // Verificar se todos os campos usados nas condições já foram respondidos
         let allConditionFieldsAnswered = true;
         for (const condition of conditions) {
-            if (!responses[condition.field_id] || responses[condition.field_id] === '') {
+            const fieldValue = responses[condition.field_id];
+            if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
                 allConditionFieldsAnswered = false;
                 break;
             }
         }
-        if (!allConditionFieldsAnswered) continue; // Pular este fluxo se os campos condicionais não foram respondidos
 
-        let conditionsMet = conditionsType === 'all';
+        // Se campos condicionais não foram respondidos, ignorar este fluxo
+        if (!allConditionFieldsAnswered) {
+            continue;
+        }
+
+        // Verificar se condições foram atendidas
+        let conditionsMet = (conditionsType === 'all');
 
         for (const condition of conditions) {
             const fieldValue = responses[condition.field_id];
             const conditionValue = condition.value;
             const operator = condition.operator;
 
-            let met = false;
-
             // Processar arrays (checkboxes)
-            const valueToCheck = Array.isArray(fieldValue) ? fieldValue.join(',') : (fieldValue || '');
+            const valueToCheck = Array.isArray(fieldValue) ? fieldValue.join(',') : String(fieldValue || '');
 
+            let met = false;
             switch (operator) {
                 case 'equals':
                     met = valueToCheck.toLowerCase() === conditionValue.toLowerCase();
@@ -405,34 +411,21 @@ function checkFlows() {
 
             if (conditionsType === 'all') {
                 conditionsMet = conditionsMet && met;
-                if (!conditionsMet) break; // Se uma falhou no AND, pode parar
+                if (!conditionsMet) break;
             } else {
                 conditionsMet = conditionsMet || met;
-                if (conditionsMet) break; // Se uma passou no OR, pode parar
+                if (conditionsMet) break;
             }
         }
 
-        // Se as condições foram atendidas, pular para o primeiro campo DO fluxo
+        // Se condições foram atendidas, retornar o flow_id
         if (conditionsMet) {
-            console.log('🎯 Fluxo ativado:', flow.label, 'Flow ID:', flow.id);
-
-            // Marcar fluxo como ativo
-            activeFlowId = flow.id;
-            activeFlowOrderIndex = parseInt(flow.order_index);
-
-            // Encontrar o primeiro slide que PERTENCE a este fluxo (flow_id == flow.id)
-            for (let i = 0; i < totalSlides; i++) {
-                const slideFlowId = slides[i].getAttribute('data-flow-id');
-
-                if (slideFlowId == flow.id) {
-                    console.log('✅ Pulando para primeiro campo do fluxo:', i, 'Flow ID:', slideFlowId);
-                    return i; // Retornar o índice do primeiro campo do fluxo
-                }
-            }
+            console.log('🎯 Fluxo ativado:', flow.label, '(Flow ID:', flow.id + ')');
+            return flow.id;
         }
     }
 
-    return -1; // Nenhum fluxo ativado
+    return null; // Nenhum fluxo ativado
 }
 
 function updateProgress() {
@@ -459,6 +452,9 @@ function updateVirtualNumber() {
     }
 }
 
+/**
+ * Avança para a próxima pergunta com lógica de fluxos
+ */
 function nextQuestion() {
     const currentQuestion = slides[currentSlide];
 
@@ -480,66 +476,64 @@ function nextQuestion() {
             const minInput = currentQuestion.querySelector(`input[name="${baseName}_min"]`);
             const maxInput = currentQuestion.querySelector(`input[name="${baseName}_max"]`);
 
-            if (input.name.endsWith('_min') && minInput && maxInput) {
-                // Se é required, verificar se ambos têm valores válidos
-                if (input.hasAttribute('required') && (!minInput.value.trim() || !maxInput.value.trim())) {
-                    valid = false;
-                    if (!firstInvalidInput) firstInvalidInput = input;
-                    minInput.classList.add('error');
-                    maxInput.classList.add('error');
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'error-message';
-                    errorMsg.textContent = 'Este campo é obrigatório';
-                    input.insertAdjacentElement('afterend', errorMsg);
-                    return;
-                }
-            }
-            return; // Já tratamos o caso especial dos campos range
-        }
+            if (input.hasAttribute('required') && (!minInput.value || !maxInput.value)) {
+                valid = false;
+                if (!firstInvalidInput) firstInvalidInput = input;
 
-        if (input.hasAttribute('required') && !input.value.trim()) {
-            valid = false;
-            if (!firstInvalidInput) firstInvalidInput = input;
-            input.classList.add('error');
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.textContent = 'Este campo é obrigatório';
-            input.insertAdjacentElement('afterend', errorMsg);
+                const errorContainer = input.closest('.flex')?.parentElement || input.parentElement;
+                if (errorContainer && !errorContainer.querySelector('.error-message')) {
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'error-message text-red-500 text-sm mt-2';
+                    errorMsg.textContent = 'Preencha ambos os valores (de e até)';
+                    errorContainer.appendChild(errorMsg);
+                }
+
+                minInput.classList.add('error');
+                maxInput.classList.add('error');
+            }
             return;
         }
 
-        if (input.type === 'email' && input.value.trim()) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(input.value.trim())) {
-                valid = false;
-                if (!firstInvalidInput) firstInvalidInput = input;
-                input.classList.add('error');
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'error-message';
-                errorMsg.textContent = 'Digite um e-mail válido';
-                input.insertAdjacentElement('afterend', errorMsg);
-                return;
+        // Verificar campos obrigatórios normais
+        if (input.hasAttribute('required') && !input.value.trim()) {
+            valid = false;
+            if (!firstInvalidInput) firstInvalidInput = input;
+
+            input.classList.add('error');
+
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message text-red-500 text-sm mt-2';
+            errorMsg.textContent = 'Este campo é obrigatório';
+            input.parentElement.appendChild(errorMsg);
+        }
+    });
+
+    // Verificar campos de rádio obrigatórios
+    const radioGroups = {};
+    currentQuestion.querySelectorAll('input[type="radio"]').forEach(radio => {
+        if (radio.hasAttribute('required')) {
+            if (!radioGroups[radio.name]) {
+                radioGroups[radio.name] = {
+                    checked: false,
+                    container: radio.closest('.space-y-2, .grid')
+                };
+            }
+            if (radio.checked) {
+                radioGroups[radio.name].checked = true;
             }
         }
     });
 
-    // Validar radio/checkbox obrigatórios
-    const radioGroups = currentQuestion.querySelectorAll('input[type="radio"][required], input[type="checkbox"][required]');
-    if (radioGroups.length > 0) {
-        const firstRadio = radioGroups[0];
-        const groupName = firstRadio.getAttribute('name');
-        const isChecked = currentQuestion.querySelector(`input[name="${groupName}"]:checked`);
-
-        if (!isChecked) {
+    for (const groupName in radioGroups) {
+        if (!radioGroups[groupName].checked) {
             valid = false;
-            const container = currentQuestion.querySelector('.flex.flex-wrap, .rating-stars, .terms-checkbox');
-            if (container && !container.nextElementSibling?.classList.contains('error-message')) {
+            const container = radioGroups[groupName].container;
+            if (container && !container.querySelector('.error-message')) {
                 const errorMsg = document.createElement('div');
-                errorMsg.className = 'error-message';
-                errorMsg.textContent = 'Selecione pelo menos uma opção';
-                container.insertAdjacentElement('afterend', errorMsg);
+                errorMsg.className = 'error-message text-red-500 text-sm mt-2';
+                errorMsg.textContent = 'Selecione uma opção';
+                container.appendChild(errorMsg);
             }
-            return;
         }
     }
 
@@ -550,92 +544,102 @@ function nextQuestion() {
         return;
     }
 
-    // Verificar se algum fluxo deve ser ativado
-    const targetFlowIndex = checkFlows();
-
     // Esconder slide atual
     slides[currentSlide].style.display = 'none';
 
-    // Se um fluxo foi ativado, pular para o índice do fluxo
-    if (targetFlowIndex !== -1) {
-        currentSlide = targetFlowIndex;
-    } else if (activeFlowId !== null) {
-        // Estamos em um fluxo ativo - navegar apenas entre campos deste fluxo
-        console.log('📂 Navegando dentro do fluxo ativo:', activeFlowId);
+    // ==================== LÓGICA DE NAVEGAÇÃO ====================
 
-        // Procurar o próximo campo com o mesmo flow_id
+    if (activeFlowId === null) {
+        // ===== NÃO ESTAMOS EM UM FLUXO =====
+
+        // Verificar se algum fluxo deve ser ativado
+        const flowToActivate = checkFlows();
+
+        if (flowToActivate !== null) {
+            // Ativar o fluxo e ir para o primeiro campo dele
+            activeFlowId = flowToActivate;
+            console.log('🚀 Ativando fluxo:', flowToActivate);
+
+            // Encontrar primeiro campo do fluxo
+            for (let i = 0; i < totalSlides; i++) {
+                const slideFlowId = slides[i].getAttribute('data-flow-id');
+                if (slideFlowId == flowToActivate) {
+                    console.log('  ➡️ Indo para primeiro campo do fluxo (índice', i + ')');
+                    currentSlide = i;
+                    break;
+                }
+            }
+        } else {
+            // Navegação normal - próximo slide sem flow_id
+            console.log('⬆️ Navegação normal');
+
+            let found = false;
+            for (let i = currentSlide + 1; i < totalSlides; i++) {
+                const slideFlowId = slides[i].getAttribute('data-flow-id');
+                const isHidden = slides[i].getAttribute('data-conditionally-hidden') === 'true';
+
+                // Próximo campo SEM flow_id e não oculto
+                if ((!slideFlowId || slideFlowId === '') && !isHidden) {
+                    currentSlide = i;
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                // Não há mais campos livres, ir para o fim
+                currentSlide = totalSlides;
+            }
+        }
+
+    } else {
+        // ===== ESTAMOS EM UM FLUXO ATIVO =====
+        console.log('📂 Dentro do fluxo:', activeFlowId);
+
+        // Procurar próximo campo do mesmo fluxo
         let foundNext = false;
         for (let i = currentSlide + 1; i < totalSlides; i++) {
             const slideFlowId = slides[i].getAttribute('data-flow-id');
 
             if (slideFlowId == activeFlowId) {
-                console.log('➡️ Próximo campo do fluxo:', i);
+                console.log('  ➡️ Próximo campo do fluxo (índice', i + ')');
                 currentSlide = i;
                 foundNext = true;
                 break;
             }
         }
 
-        // Se não encontramos próximo campo do fluxo, sair do fluxo
         if (!foundNext) {
-            console.log('🚪 Fim do fluxo. Saindo...');
+            // Fim do fluxo - desativar e continuar navegação normal
+            console.log('🏁 Fim do fluxo', activeFlowId);
+            activeFlowId = null;
 
-            const activeFlow = flows.find(f => f.id == activeFlowId);
+            // Encontrar próximo campo livre (sem flow_id)
+            let foundFree = false;
+            for (let i = currentSlide + 1; i < totalSlides; i++) {
+                const slideFlowId = slides[i].getAttribute('data-flow-id');
+                const isHidden = slides[i].getAttribute('data-conditionally-hidden') === 'true';
 
-            if (activeFlow && activeFlow.exit_to_field_id) {
-                console.log('↪️ Indo para campo de saída:', activeFlow.exit_to_field_id);
-
-                // Encontrar o índice do slide do campo de destino
-                let foundExit = false;
-                for (let i = 0; i < totalSlides; i++) {
-                    const slideFieldId = slides[i].getAttribute('data-field-id');
-                    if (slideFieldId == activeFlow.exit_to_field_id) {
-                        currentSlide = i;
-                        foundExit = true;
-                        break;
-                    }
-                }
-
-                if (!foundExit) {
-                    // exit_to_field_id não encontrado, continuar normalmente
-                    currentSlide++;
-                }
-            } else {
-                // Não há exit_to_field_id, ir para o próximo campo livre (sem flow_id)
-                console.log('➡️ Buscando próximo campo livre...');
-                let foundFree = false;
-                for (let i = currentSlide + 1; i < totalSlides; i++) {
-                    const slideFlowId = slides[i].getAttribute('data-flow-id');
-                    if (!slideFlowId || slideFlowId === '') {
-                        currentSlide = i;
-                        foundFree = true;
-                        break;
-                    }
-                }
-
-                if (!foundFree) {
-                    // Não há mais campos livres, incrementar normalmente
-                    currentSlide++;
+                if ((!slideFlowId || slideFlowId === '') && !isHidden) {
+                    console.log('  ➡️ Continuando para próximo campo livre (índice', i + ')');
+                    currentSlide = i;
+                    foundFree = true;
+                    break;
                 }
             }
 
-            // Desativar fluxo
-            activeFlowId = null;
-            activeFlowOrderIndex = null;
-        }
-    } else {
-        // Navegação normal - incrementar e pular slides condicionalmente ocultos
-        currentSlide++;
-
-        // Pular slides condicionalmente ocultos
-        while (currentSlide < totalSlides && slides[currentSlide].getAttribute('data-conditionally-hidden') === 'true') {
-            currentSlide++;
+            if (!foundFree) {
+                // Não há mais campos livres, ir para o fim
+                currentSlide = totalSlides;
+            }
         }
     }
 
+    // ==================== FIM DA LÓGICA ====================
+
     // Verificar se chegamos ao fim
     if (currentSlide >= totalSlides) {
-        // Submeter o formulário automaticamente
+        console.log('✅ Fim do formulário');
         const form = document.getElementById('formOneByOne');
         if (form) {
             form.dispatchEvent(new Event('submit'));
@@ -643,14 +647,13 @@ function nextQuestion() {
         return;
     }
 
-    // Adicionar o novo slide ao histórico de visitados (se não estiver já)
+    // Adicionar ao histórico de visitados
     if (!visitedSlides.includes(currentSlide)) {
         visitedSlides.push(currentSlide);
     }
 
-    // Mostrar próximo slide visível
+    // Mostrar próximo slide
     slides[currentSlide].style.display = 'block';
-
     slides[currentSlide].classList.remove('fade-in');
     void slides[currentSlide].offsetWidth;
     slides[currentSlide].classList.add('fade-in');
@@ -661,7 +664,7 @@ function nextQuestion() {
     }
 
     updateProgress();
-    updateVirtualNumber(); // Atualizar numeração virtual
+    updateVirtualNumber();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

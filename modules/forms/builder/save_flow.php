@@ -27,10 +27,6 @@ try {
     $label = trim($_POST['label'] ?? 'Novo Fluxo');
     $conditions = trim($_POST['conditions'] ?? '[]');
     $conditions_type = trim($_POST['conditions_type'] ?? 'all');
-    $exit_to_field_id = !empty($_POST['exit_to_field_id']) ? intval($_POST['exit_to_field_id']) : null;
-
-    // Debug log
-    error_log('save_flow.php - Recebido: exit_to_field_id_raw=' . ($_POST['exit_to_field_id'] ?? 'NULL') . ', exit_to_field_id_processado=' . ($exit_to_field_id ?? 'NULL'));
 
     // Validar JSON de condições
     $conditionsArray = json_decode($conditions, true);
@@ -54,37 +50,26 @@ try {
 
     if (!empty($flow_id)) {
         // Atualizar fluxo existente
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE form_flows
-                SET label = :label,
-                    conditions = :conditions,
-                    conditions_type = :conditions_type,
-                    exit_to_field_id = :exit_to_field_id
-                WHERE id = :flow_id AND form_id = :form_id
-            ");
-            $stmt->execute([
-                ':label' => $label,
-                ':conditions' => $conditions,
-                ':conditions_type' => $conditions_type,
-                ':exit_to_field_id' => $exit_to_field_id,
-                ':flow_id' => $flow_id,
-                ':form_id' => $form_id
-            ]);
+        $stmt = $pdo->prepare("
+            UPDATE form_flows
+            SET label = :label,
+                conditions = :conditions,
+                conditions_type = :conditions_type
+            WHERE id = :flow_id AND form_id = :form_id
+        ");
+        $stmt->execute([
+            ':label' => $label,
+            ':conditions' => $conditions,
+            ':conditions_type' => $conditions_type,
+            ':flow_id' => $flow_id,
+            ':form_id' => $form_id
+        ]);
 
-            error_log('save_flow.php - Fluxo #' . $flow_id . ' atualizado com exit_to_field_id=' . ($exit_to_field_id ?? 'NULL'));
-
-            echo json_encode([
-                'success' => true,
-                'flow_id' => $flow_id,
-                'message' => 'Fluxo atualizado com sucesso'
-            ]);
-        } catch (PDOException $e) {
-            if (strpos($e->getMessage(), 'exit_to_field_id') !== false) {
-                throw new Exception('Erro: A coluna exit_to_field_id não existe. Execute o SQL: ALTER TABLE form_flows ADD COLUMN exit_to_field_id INT DEFAULT NULL AFTER order_index');
-            }
-            throw $e;
-        }
+        echo json_encode([
+            'success' => true,
+            'flow_id' => $flow_id,
+            'message' => 'Fluxo atualizado com sucesso'
+        ]);
     } else {
         // Criar novo fluxo
         // Obter o próximo order_index
@@ -93,35 +78,25 @@ try {
         $maxOrder = $orderStmt->fetch(PDO::FETCH_ASSOC);
         $nextOrder = ($maxOrder['max_order'] ?? 0) + 1;
 
-        try {
-            $stmt = $pdo->prepare("
-                INSERT INTO form_flows (form_id, label, conditions, conditions_type, order_index, exit_to_field_id)
-                VALUES (:form_id, :label, :conditions, :conditions_type, :order_index, :exit_to_field_id)
-            ");
-            $stmt->execute([
-                ':form_id' => $form_id,
-                ':label' => $label,
-                ':conditions' => $conditions,
-                ':conditions_type' => $conditions_type,
-                ':order_index' => $nextOrder,
-                ':exit_to_field_id' => $exit_to_field_id
-            ]);
+        $stmt = $pdo->prepare("
+            INSERT INTO form_flows (form_id, label, conditions, conditions_type, order_index)
+            VALUES (:form_id, :label, :conditions, :conditions_type, :order_index)
+        ");
+        $stmt->execute([
+            ':form_id' => $form_id,
+            ':label' => $label,
+            ':conditions' => $conditions,
+            ':conditions_type' => $conditions_type,
+            ':order_index' => $nextOrder
+        ]);
 
-            $newFlowId = $pdo->lastInsertId();
+        $newFlowId = $pdo->lastInsertId();
 
-            error_log('save_flow.php - Novo fluxo #' . $newFlowId . ' criado com exit_to_field_id=' . ($exit_to_field_id ?? 'NULL'));
-
-            echo json_encode([
-                'success' => true,
-                'flow_id' => $newFlowId,
-                'message' => 'Fluxo criado com sucesso'
-            ]);
-        } catch (PDOException $e) {
-            if (strpos($e->getMessage(), 'exit_to_field_id') !== false) {
-                throw new Exception('Erro: A coluna exit_to_field_id não existe. Execute o SQL: ALTER TABLE form_flows ADD COLUMN exit_to_field_id INT DEFAULT NULL AFTER order_index');
-            }
-            throw $e;
-        }
+        echo json_encode([
+            'success' => true,
+            'flow_id' => $newFlowId,
+            'message' => 'Fluxo criado com sucesso'
+        ]);
     }
 
 } catch (Exception $e) {
