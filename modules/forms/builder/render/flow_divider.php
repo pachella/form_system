@@ -15,7 +15,7 @@ if ($conditionsCount > 0) {
 <div class="flow-divider-card bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4"
      data-flow-id="<?= $flow['id'] ?>"
      data-type="flow">
-    <div class="flex items-start justify-between mb-3">
+    <div class="flow-header flex items-start justify-between mb-3 cursor-move">
         <div class="flex items-start gap-3 flex-1">
             <div class="text-purple-600 dark:text-purple-400 mt-1">
                 <i class="fas fa-code-branch text-xl"></i>

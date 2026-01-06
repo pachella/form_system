@@ -209,7 +209,8 @@ if (fieldsList) {
     new Sortable(fieldsList, {
         animation: 150,
         group: 'shared-fields', // Permitir compartilhamento com flow containers
-        handle: '.field-item, .flow-divider-card',
+        handle: '.field-item, .flow-header', // Apenas header do fluxo é draggable
+        draggable: '.field-item, .flow-divider-card', // Define quais elementos podem ser arrastados
         ghostClass: 'opacity-50',
         filter: function(evt, target) {
             // Bloquear mensagem de sucesso
