@@ -27,20 +27,26 @@ CREATE INDEX IF NOT EXISTS idx_pro_expires ON users(pro_expires_at);
 
 **URL do Webhook:** `https://formtalk.app/webhooks/ticto.php`
 
-**Eventos para configurar:**
+**Eventos para marcar (baseado nos nomes em português da Ticto):**
 
-**Ativar PRO (30 dias):**
-- `subscription.created`
-- `subscription.activated`
-- `subscription.renewed`
-- `charge.approved`
-- `payment.approved`
+**✅ ATIVAR PRO (marcar estes):**
+- ✅ Venda Realizada
+- ✅ [Assinatura] - Período de Testes Iniciado
+- ✅ [Assinatura] - Retomada
+- ✅ [Assinatura] - Extendida
 
-**Desativar PRO:**
-- `subscription.cancelled`
-- `subscription.expired`
-- `charge.failed`
-- `payment.failed`
+**❌ DESATIVAR PRO (marcar estes):**
+- ✅ [Assinatura] - Cancelada
+- ✅ [Assinatura] - Encerrada (Todas as Cobranças Finalizadas)
+- ✅ Chargeback
+- ✅ Reembolso
+
+**⚠️ IMPORTANTE:** O webhook processa o campo `status` do payload:
+- Status `paid`, `approved`, `active` = Ativa PRO
+- Status `cancelled`, `canceled`, `refunded`, `chargeback`, `expired` = Desativa PRO
+- Outros status (como `waiting_payment`) = Ignorados
+
+**📧 Email do usuário:** O webhook busca o email em `customer.email` do payload.
 
 ### 3. Configurar CRON (expiração automática)
 
