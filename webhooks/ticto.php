@@ -1,10 +1,10 @@
 <?php
 /**
- * Webhook da Ticto para processar eventos de assinatura
- * Formtalk - Sistema de Formulários
+ * Webhook da Ticto - Versão Simplificada
+ * Apenas ativa/desativa plano PRO
  */
 
-// Log de debug (opcional - remover em produção)
+// Log de debug
 $logFile = __DIR__ . '/ticto_webhook.log';
 
 // Capturar dados do webhook
@@ -27,12 +27,9 @@ require_once(__DIR__ . "/../core/db.php");
 
 try {
     // Extrair dados do webhook
-    // IMPORTANTE: Ajustar campos conforme formato real da Ticto
+    // AJUSTE OS CAMPOS CONFORME O FORMATO REAL DA TICTO
     $event = $payload['event'] ?? $payload['type'] ?? '';
     $customerEmail = $payload['email'] ?? $payload['customer']['email'] ?? '';
-    $customerName = $payload['name'] ?? $payload['customer']['name'] ?? '';
-    $subscriptionId = $payload['subscription_id'] ?? $payload['id'] ?? '';
-    $status = $payload['status'] ?? '';
 
     file_put_contents($logFile, date('[Y-m-d H:i:s] ') . "Processando evento: {$event} para {$customerEmail}\n", FILE_APPEND);
 
@@ -42,7 +39,6 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        // Usuário não encontrado - pode ser um novo cadastro
         file_put_contents($logFile, date('[Y-m-d H:i:s] ') . "AVISO: Usuário não encontrado: {$customerEmail}\n\n", FILE_APPEND);
         http_response_code(404);
         echo json_encode(['error' => 'Usuário não encontrado', 'email' => $customerEmail]);
@@ -56,31 +52,27 @@ try {
         case 'subscription.renewed':
         case 'charge.approved':
         case 'payment.approved':
-            // Ativar plano PRO por 30 dias
+            // ATIVAR PRO POR 30 DIAS
             $expiresAt = date('Y-m-d H:i:s', strtotime('+30 days'));
 
             $updateStmt = $pdo->prepare("
                 UPDATE users
                 SET user_role = 'pro',
-                    subscription_id = :subscription_id,
-                    subscription_status = 'active',
-                    subscription_expires_at = :expires_at,
-                    updated_at = NOW()
+                    pro_expires_at = :expires_at
                 WHERE id = :user_id
             ");
 
             $updateStmt->execute([
-                ':subscription_id' => $subscriptionId,
                 ':expires_at' => $expiresAt,
                 ':user_id' => $user['id']
             ]);
 
-            file_put_contents($logFile, date('[Y-m-d H:i:s] ') . "✓ Usuário #{$user['id']} atualizado para PRO até {$expiresAt}\n\n", FILE_APPEND);
+            file_put_contents($logFile, date('[Y-m-d H:i:s] ') . "✓ Usuário #{$user['id']} ativado como PRO até {$expiresAt}\n\n", FILE_APPEND);
 
             http_response_code(200);
             echo json_encode([
                 'success' => true,
-                'message' => 'Assinatura ativada',
+                'message' => 'PRO ativado',
                 'user_id' => $user['id'],
                 'expires_at' => $expiresAt
             ]);
@@ -90,12 +82,11 @@ try {
         case 'subscription.expired':
         case 'charge.failed':
         case 'payment.failed':
-            // Desativar plano PRO
+            // DESATIVAR PRO
             $updateStmt = $pdo->prepare("
                 UPDATE users
                 SET user_role = 'free',
-                    subscription_status = 'cancelled',
-                    updated_at = NOW()
+                    pro_expires_at = NULL
                 WHERE id = :user_id
             ");
 
@@ -106,7 +97,7 @@ try {
             http_response_code(200);
             echo json_encode([
                 'success' => true,
-                'message' => 'Assinatura cancelada',
+                'message' => 'PRO desativado',
                 'user_id' => $user['id']
             ]);
             break;

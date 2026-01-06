@@ -1,26 +1,26 @@
-# Sistema de Webhook Ticto
+# Sistema de Webhook Ticto - Versão Simplificada
+
+## Resumo
+
+Sistema simples que ativa/desativa o plano PRO quando o webhook da Ticto é recebido.
 
 ## Configuração
 
 ### 1. Executar Migração do Banco de Dados
 
-Execute o SQL de migração para adicionar os campos necessários:
+Execute o SQL para adicionar apenas 1 campo:
 
 ```bash
 mysql -u webformtalk_forms -p webformtalk_forms < /home/user/form_system/migrations/add_subscription_fields.sql
 ```
 
-Ou execute manualmente no phpMyAdmin/MySQL:
+Ou execute manualmente:
 
 ```sql
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255) DEFAULT NULL AFTER user_role,
-ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT NULL AFTER subscription_id,
-ADD COLUMN IF NOT EXISTS subscription_expires_at DATETIME DEFAULT NULL AFTER subscription_status,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER subscription_expires_at;
+ADD COLUMN IF NOT EXISTS pro_expires_at DATETIME DEFAULT NULL AFTER user_role;
 
-CREATE INDEX IF NOT EXISTS idx_subscription_expires ON users(subscription_expires_at);
-CREATE INDEX IF NOT EXISTS idx_subscription_status ON users(subscription_status);
+CREATE INDEX IF NOT EXISTS idx_pro_expires ON users(pro_expires_at);
 ```
 
 ### 2. Configurar Webhook na Ticto
@@ -28,115 +28,88 @@ CREATE INDEX IF NOT EXISTS idx_subscription_status ON users(subscription_status)
 **URL do Webhook:** `https://formtalk.app/webhooks/ticto.php`
 
 **Eventos para configurar:**
-- `subscription.created` - Nova assinatura criada
-- `subscription.activated` - Assinatura ativada
-- `subscription.renewed` - Assinatura renovada
-- `charge.approved` - Cobrança aprovada
-- `payment.approved` - Pagamento aprovado
-- `subscription.cancelled` - Assinatura cancelada
-- `subscription.expired` - Assinatura expirada
-- `charge.failed` - Cobrança falhou
-- `payment.failed` - Pagamento falhou
 
-### 3. Testar Webhook
+**Ativar PRO (30 dias):**
+- `subscription.created`
+- `subscription.activated`
+- `subscription.renewed`
+- `charge.approved`
+- `payment.approved`
 
-Você pode testar o webhook enviando um POST para a URL:
+**Desativar PRO:**
+- `subscription.cancelled`
+- `subscription.expired`
+- `charge.failed`
+- `payment.failed`
+
+### 3. Configurar CRON (expiração automática)
+
+```bash
+crontab -e
+```
+
+Adicionar:
+```
+0 0 * * * /usr/bin/php /home/user/form_system/cron/check_expired_subscriptions.php
+```
+
+### 4. Testar Webhook
 
 ```bash
 curl -X POST https://formtalk.app/webhooks/ticto.php \
   -H "Content-Type: application/json" \
   -d '{
     "event": "subscription.created",
-    "email": "usuario@exemplo.com",
-    "name": "Nome do Usuário",
-    "subscription_id": "sub_123456",
-    "status": "active"
+    "email": "seu@email.com"
   }'
 ```
 
-### 4. Logs
+## Como Funciona
 
-Os logs do webhook são salvos em: `/home/user/form_system/webhooks/ticto_webhook.log`
+### Quando usuário assina:
+1. Ticto envia webhook com evento de ativação
+2. Sistema busca usuário pelo email
+3. Atualiza: `user_role = 'pro'` e `pro_expires_at = +30 dias`
 
-Para visualizar os logs:
+### Quando cancelar ou falhar:
+1. Ticto envia webhook de cancelamento
+2. Sistema atualiza: `user_role = 'free'` e `pro_expires_at = NULL`
 
+### Expiração automática (CRON):
+1. CRON roda diariamente à meia-noite
+2. Busca usuários com `pro_expires_at < NOW()` e `user_role = 'pro'`
+3. Atualiza para `user_role = 'free'` e `pro_expires_at = NULL`
+
+## Logs
+
+**Webhook:** `/home/user/form_system/webhooks/ticto_webhook.log`
 ```bash
 tail -f /home/user/form_system/webhooks/ticto_webhook.log
 ```
 
-## Funcionamento
-
-### Quando um usuário assina (eventos de ativação):
-1. Webhook recebe o evento
-2. Busca usuário pelo email
-3. Atualiza `user_role` para `pro`
-4. Define `subscription_expires_at` para +30 dias
-5. Define `subscription_status` como `active`
-6. Salva `subscription_id` da Ticto
-
-### Quando uma assinatura é cancelada/expira:
-1. Webhook recebe o evento
-2. Busca usuário pelo email
-3. Atualiza `user_role` para `free`
-4. Define `subscription_status` como `cancelled`
-
-### Sistema de Expiração Automática
-
-Para garantir que assinaturas expirem automaticamente após 30 dias sem renovação, você pode criar um CRON job:
-
-**Arquivo:** `/home/user/form_system/cron/check_expired_subscriptions.php`
-
-```php
-<?php
-require_once(__DIR__ . "/../core/db.php");
-
-// Buscar assinaturas expiradas
-$stmt = $pdo->prepare("
-    SELECT id, email, user_name
-    FROM users
-    WHERE subscription_expires_at < NOW()
-    AND user_role = 'pro'
-    AND subscription_status = 'active'
-");
-$stmt->execute();
-$expiredUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Atualizar usuários expirados para FREE
-foreach ($expiredUsers as $user) {
-    $updateStmt = $pdo->prepare("
-        UPDATE users
-        SET user_role = 'free',
-            subscription_status = 'expired'
-        WHERE id = :user_id
-    ");
-    $updateStmt->execute([':user_id' => $user['id']]);
-
-    echo "Usuário {$user['email']} retornou para FREE (expirado)\n";
-}
-
-echo "Total de assinaturas expiradas: " . count($expiredUsers) . "\n";
-```
-
-**Configurar CRON (executar diariamente à meia-noite):**
-
+**CRON:** `/home/user/form_system/cron/subscriptions_check.log`
 ```bash
-crontab -e
+tail -f /home/user/form_system/cron/subscriptions_check.log
 ```
 
-Adicionar linha:
+## Estrutura do Banco
 
-```
-0 0 * * * /usr/bin/php /home/user/form_system/cron/check_expired_subscriptions.php
+```sql
+users:
+  - id
+  - email
+  - user_name
+  - user_role (free/pro)
+  - pro_expires_at (DATETIME) ← NOVA COLUNA
 ```
 
 ## Ajustes Necessários
 
-⚠️ **IMPORTANTE:** O formato exato do payload da Ticto pode variar. Ajuste os campos no arquivo `ticto.php` conforme a documentação oficial da Ticto:
+⚠️ **IMPORTANTE:** Ajuste os campos no `webhooks/ticto.php` conforme o formato real da Ticto:
 
-- Nomes dos eventos (`event`, `type`)
-- Campos de email (`email`, `customer.email`)
-- Campos de nome (`name`, `customer.name`)
-- ID da assinatura (`subscription_id`, `id`)
-- Status (`status`)
+```php
+$event = $payload['event'] ?? $payload['type'] ?? '';
+$customerEmail = $payload['email'] ?? $payload['customer']['email'] ?? '';
+```
 
-Verifique os logs em `ticto_webhook.log` para ver o formato real dos dados recebidos.
+Verifique o log `ticto_webhook.log` para ver o formato exato dos dados que a Ticto envia.

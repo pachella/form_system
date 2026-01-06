@@ -1,13 +1,8 @@
--- Adicionar campos de assinatura na tabela users
+-- Adicionar apenas campo de expiração PRO na tabela users
 -- Execute este SQL apenas uma vez
 
--- Verificar se as colunas já existem antes de adicionar
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS subscription_id VARCHAR(255) DEFAULT NULL AFTER user_role,
-ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT NULL AFTER subscription_id,
-ADD COLUMN IF NOT EXISTS subscription_expires_at DATETIME DEFAULT NULL AFTER subscription_status,
-ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER subscription_expires_at;
+ADD COLUMN IF NOT EXISTS pro_expires_at DATETIME DEFAULT NULL AFTER user_role;
 
 -- Criar índice para melhorar performance em consultas de expiração
-CREATE INDEX IF NOT EXISTS idx_subscription_expires ON users(subscription_expires_at);
-CREATE INDEX IF NOT EXISTS idx_subscription_status ON users(subscription_status);
+CREATE INDEX IF NOT EXISTS idx_pro_expires ON users(pro_expires_at);
