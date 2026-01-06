@@ -32,19 +32,13 @@ try {
     $allow_multiple = isset($_POST['allow_multiple']) ? 1 : 0;
     $options = trim($_POST['options'] ?? '');
     
-    // Obter dados da mídia
-    $media_data = json_decode(trim($_POST['media'] ?? ''), true);
-    if ($media_data) {
-        $media = $media_data['url'] ?? '';
-        $media_style = $media_data['style'] ?? 'centered';
-        $media_position = $media_data['position'] ?? 'left';
-        $media_size = $media_data['size'] ?? 'large';
-    } else {
-        $media = trim($_POST['media'] ?? '');
-        $media_style = 'centered';
-        $media_position = 'left';
-        $media_size = 'large';
-    }
+    // Obter dados da mídia (salvamos o JSON completo agora)
+    $media = trim($_POST['media'] ?? '');
+
+    // Para compatibilidade com código antigo, mantemos campos vazios
+    $media_style = '';
+    $media_position = '';
+    $media_size = '';
 
     // Capturar configurações extras
     $config = [];

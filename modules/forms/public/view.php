@@ -10,6 +10,98 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Data no passado
 require_once(__DIR__ . "/../../../core/db.php");
 require_once(__DIR__ . "/../helpers/field_placeholders.php");
 
+// Função helper para renderizar mídia
+function renderMedia($mediaData) {
+    if (empty($mediaData)) {
+        return '';
+    }
+
+    // Tentar decodificar como JSON
+    $media = json_decode($mediaData, true);
+
+    // Se é JSON válido
+    if ($media && isset($media['type'])) {
+        if ($media['type'] === 'video') {
+            $url = $media['url'] ?? '';
+            $service = $media['service'] ?? 'direct';
+
+            if ($service === 'youtube') {
+                // Extrair ID do YouTube
+                $videoId = '';
+                if (strpos($url, 'youtu.be/') !== false) {
+                    $videoId = explode('youtu.be/', $url)[1];
+                    $videoId = explode('?', $videoId)[0];
+                } elseif (strpos($url, 'youtube.com/watch?v=') !== false) {
+                    parse_str(parse_url($url, PHP_URL_QUERY), $params);
+                    $videoId = $params['v'] ?? '';
+                }
+
+                if ($videoId) {
+                    return '<div class="media-container mb-4 aspect-video">
+                        <iframe class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700"
+                                src="https://www.youtube.com/embed/' . htmlspecialchars($videoId) . '"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>';
+                }
+            } elseif ($service === 'vimeo') {
+                // Extrair ID do Vimeo
+                $videoId = '';
+                if (preg_match('/vimeo\.com\/(\d+)/', $url, $matches)) {
+                    $videoId = $matches[1];
+                }
+
+                if ($videoId) {
+                    return '<div class="media-container mb-4 aspect-video">
+                        <iframe class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700"
+                                src="https://player.vimeo.com/video/' . htmlspecialchars($videoId) . '"
+                                frameborder="0"
+                                allow="autoplay; fullscreen; picture-in-picture"
+                                allowfullscreen>
+                        </iframe>
+                    </div>';
+                }
+            } else {
+                // Vídeo direto
+                return '<div class="media-container mb-4 aspect-video">
+                    <video controls class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700">
+                        <source src="' . htmlspecialchars($url) . '" type="video/mp4">
+                        Seu navegador não suporta vídeos.
+                    </video>
+                </div>';
+            }
+        } elseif ($media['type'] === 'image') {
+            $url = $media['url'] ?? '';
+            return '<div class="media-container mb-4 text-center">
+                <img src="' . htmlspecialchars($url) . '"
+                     alt="Imagem do campo"
+                     class="max-w-full h-auto rounded-lg border border-gray-200 dark:border-zinc-700">
+            </div>';
+        }
+    } else {
+        // Compatibilidade com formato antigo (apenas URL)
+        $extension = strtolower(pathinfo($mediaData, PATHINFO_EXTENSION));
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+            return '<div class="media-container mb-4 text-center">
+                <img src="' . htmlspecialchars($mediaData) . '"
+                     alt="Imagem do campo"
+                     class="max-w-full h-auto rounded-lg border border-gray-200 dark:border-zinc-700">
+            </div>';
+        } else {
+            return '<div class="media-container mb-4 aspect-video">
+                <video controls class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700">
+                    <source src="' . htmlspecialchars($mediaData) . '" type="video/mp4">
+                    Seu navegador não suporta vídeos.
+                </video>
+            </div>';
+        }
+    }
+
+    return '';
+}
+
 $formId = $_GET['id'] ?? null;
 
 if (!$formId) {
@@ -523,27 +615,9 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                                 </div>
                             <?php else: ?>
                                 <?php
-                                // Exibir mídia se existir (exceto flutuante)
-                                if (!empty($field['media']) && $field['media'] !== '' && $field['media_style'] !== 'float'):
-                                    $extension = strtolower(pathinfo($field['media'], PATHINFO_EXTENSION));
-                                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])):
-                                ?>
-                                        <div class="media-container mb-4 text-center">
-                                            <img src="<?= htmlspecialchars($field['media']) ?>" 
-                                                 alt="Imagem do campo" 
-                                                 class="max-w-full h-auto rounded-lg border border-gray-200 dark:border-zinc-700">
-                                        </div>
-                                <?php
-                                    else:
-                                ?>
-                                        <div class="media-container mb-4 aspect-video">
-                                            <video controls class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700">
-                                                <source src="<?= htmlspecialchars($field['media']) ?>" type="video/mp4">
-                                                Seu navegador não suporta vídeos.
-                                            </video>
-                                        </div>
-                                <?php
-                                    endif;
+                                // Exibir mídia se existir
+                                if (!empty($field['media']) && $field['media'] !== ''):
+                                    echo renderMedia($field['media']);
                                 endif;
                                 ?>
 
@@ -685,27 +759,9 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                                     </div>
                                 <?php else: ?>
                                     <?php
-                                    // Exibir mídia se existir (exceto flutuante)
-                                    if (!empty($field['media']) && $field['media'] !== '' && $field['media_style'] !== 'float'):
-                                        $extension = strtolower(pathinfo($field['media'], PATHINFO_EXTENSION));
-                                        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])):
-                                    ?>
-                                            <div class="media-container mb-4 text-center">
-                                                <img src="<?= htmlspecialchars($field['media']) ?>" 
-                                                     alt="Imagem do campo" 
-                                                     class="max-w-full h-auto rounded-lg border border-gray-200 dark:border-zinc-700">
-                                            </div>
-                                    <?php
-                                        else:
-                                    ?>
-                                            <div class="media-container mb-4 aspect-video">
-                                                <video controls class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700">
-                                                    <source src="<?= htmlspecialchars($field['media']) ?>" type="video/mp4">
-                                                    Seu navegador não suporta vídeos.
-                                                </video>
-                                            </div>
-                                    <?php
-                                        endif;
+                                    // Exibir mídia se existir
+                                    if (!empty($field['media']) && $field['media'] !== ''):
+                                        echo renderMedia($field['media']);
                                     endif;
                                     ?>
 

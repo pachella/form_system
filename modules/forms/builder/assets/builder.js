@@ -1278,71 +1278,6 @@ async function toggleFormStatus() {
 // ============================================
 
 // Função auxiliar para inicializar eventos de seleção de imagens
-function initializeImageSelectionEvents() {
-    document.querySelectorAll('.style-option, .position-option, .size-option').forEach(option => {
-        const newOption = option.cloneNode(true);
-        option.parentNode.replaceChild(newOption, option);
-    });
-
-    document.querySelectorAll('.style-option').forEach(option => {
-        option.addEventListener('click', function() {
-            const radio = this.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
-                
-                document.querySelectorAll('.style-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                
-                this.classList.add('selected');
-                togglePositionOptions(radio.value);
-            }
-        });
-    });
-
-    document.querySelectorAll('.position-option').forEach(option => {
-        option.addEventListener('click', function() {
-            const radio = this.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
-                
-                document.querySelectorAll('.position-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                
-                this.classList.add('selected');
-            }
-        });
-    });
-
-    document.querySelectorAll('.size-option').forEach(option => {
-        option.addEventListener('click', function() {
-            const radio = this.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
-                
-                document.querySelectorAll('.size-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                
-                this.classList.add('selected');
-            }
-        });
-    });
-
-    document.querySelectorAll('.style-option input[type="radio"]:checked').forEach(radio => {
-        radio.closest('.style-option').classList.add('selected');
-    });
-    
-    document.querySelectorAll('.position-option input[type="radio"]:checked').forEach(radio => {
-        radio.closest('.position-option').classList.add('selected');
-    });
-    
-    document.querySelectorAll('.size-option input[type="radio"]:checked').forEach(radio => {
-        radio.closest('.size-option').classList.add('selected');
-    });
-}
-
 // Função para abrir o modal de mídia
 function openMediaModal() {
     const currentMediaValue = document.getElementById('fieldMedia').value;
@@ -1360,126 +1295,54 @@ function openMediaModal() {
     const mediaModal = document.createElement('div');
     mediaModal.innerHTML = `
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" id="mediaModal">
-            <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-lg w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-lg w-full max-w-xl p-6 relative max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-zinc-100">Gerenciar mídia</h3>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-zinc-100">Inserir mídia</h3>
                     <button onclick="closeMediaModal()" class="text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <button id="imageTab" class="media-tab-btn px-4 py-2 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg font-medium" data-tab="image">
-                            <i class="fas fa-image mr-2"></i> Imagem
-                        </button>
-                        <button id="videoTab" class="media-tab-btn px-4 py-2 bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-zinc-300 rounded-lg font-medium" data-tab="video">
-                            <i class="fas fa-video mr-2"></i> Vídeo
-                        </button>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                            <i class="fas fa-image mr-1"></i> Upload de imagem
+                        </label>
+                        <input type="file" id="imageUpload" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
                     </div>
 
-                    <div id="imageContent" class="media-content">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Upload de imagem</label>
-                            <input type="file" id="imageUpload" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
+                    <div id="imagePreview" class="hidden mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia da imagem</label>
+                        <img id="previewImage" src="" alt="Prévia" class="max-w-full max-h-48 object-contain rounded-lg border border-gray-300 dark:border-zinc-600 mx-auto">
+                    </div>
+
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300 dark:border-zinc-600"></div>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Ou informe a URL</label>
-                            <input type="text" id="imageUrl" placeholder="https://exemplo.com/imagem.jpg" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
-                        </div>
-
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="flex-1">
-                                <div id="imagePreview" class="mt-2 hidden">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia da imagem</label>
-                                    <img id="previewImage" src="" alt="Prévia" class="max-w-full max-h-40 object-contain rounded-lg border border-gray-300 dark:border-zinc-600">
-                                </div>
-                            </div>
-
-                            <div id="imageStyleOptions" class="flex-1">
-                                <h4 class="font-medium text-gray-900 dark:text-zinc-100 mb-3 text-sm">Configurações de estilo</h4>
-
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">Estilo</label>
-                                        <div class="flex flex-wrap gap-x-1 gap-y-2">
-                                            <label class="style-option flex items-center cursor-pointer transition-all duration-200">
-                                                <input type="radio" name="image_style" value="centered" class="hidden js-style-option" checked>
-                                                <img src="/uploads/system/media_bts/estilo_centralizado.png"
-                                                     alt="Centralizado"
-                                                     class="style-icon">
-                                            </label>
-                                            <label class="style-option flex items-center cursor-pointer transition-all duration-200">
-                                                <input type="radio" name="image_style" value="float" class="hidden js-style-option">
-                                                <img src="/uploads/system/media_bts/estilo_flutuante.png"
-                                                     alt="Flutuante"
-                                                     class="style-icon">
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div id="positionOptions" class="hidden">
-                                        <label class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">Posição</label>
-                                        <div class="flex flex-wrap gap-x-1 gap-y-2">
-                                            <label class="position-option flex items-center cursor-pointer transition-all duration-200">
-                                                <input type="radio" name="image_position" value="left" class="hidden js-position-option" checked>
-                                                <img src="/uploads/system/media_bts/posicao_esquerda.png"
-                                                     alt="Esquerda"
-                                                     class="position-icon">
-                                            </label>
-                                            <label class="position-option flex items-center cursor-pointer transition-all duration-200">
-                                                <input type="radio" name="image_position" value="right" class="hidden js-position-option">
-                                                <img src="/uploads/system/media_bts/posicao_direita.png"
-                                                     alt="Direita"
-                                                     class="position-icon">
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-700 dark:text-zinc-300 mb-1">Tamanho</label>
-                                        <div class="flex flex-wrap gap-x-1 gap-y-2">
-                                            <label class="size-option flex items-center cursor-pointer transition-all duration-200">
-                                                <input type="radio" name="image_size" value="large" class="hidden js-size-option" checked>
-                                                <img src="/uploads/system/media_bts/tamanho_grande.png"
-                                                     alt="Grande"
-                                                     class="size-icon">
-                                            </label>
-                                            <label class="size-option flex items-center cursor-pointer transition-all duration-200">
-                                                <input type="radio" name="image_size" value="small" class="hidden js-size-option">
-                                                <img src="/uploads/system/media_bts/tamanho_pequeno.png"
-                                                     alt="Pequeno"
-                                                     class="size-icon">
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="relative flex justify-center text-xs">
+                            <span class="px-2 bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">OU</span>
                         </div>
                     </div>
 
-                    <div id="videoContent" class="media-content hidden">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">URL do vídeo</label>
-                            <input type="text" id="videoUrl" placeholder="Cole a URL do vídeo aqui..." class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Exemplo de URLs suportadas:</label>
-                            <ul class="text-xs text-gray-500 dark:text-zinc-400 mt-1 space-y-1">
-                                <li>• YouTube: https://youtube.com/watch?v=...</li>
-                                <li>• Vimeo: https://vimeo.com/...</li>
-                                <li>• Outros links de vídeo</li>
-                            </ul>
-                        </div>
-                        <div id="videoPreview" class="mt-4 hidden">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia do vídeo</label>
-                            <div id="videoPreviewContent" class="bg-gray-100 dark:bg-zinc-700 rounded-lg border border-gray-300 dark:border-zinc-600 max-h-40 flex items-center justify-center">
-                                <p class="text-gray-500 dark:text-zinc-400">Prévia do vídeo</p>
-                            </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                            <i class="fas fa-video mr-1"></i> URL do vídeo (YouTube, Vimeo, etc)
+                        </label>
+                        <input type="text" id="videoUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                            Cole a URL de um vídeo do YouTube, Vimeo ou outro serviço
+                        </p>
+                    </div>
+
+                    <div id="videoPreview" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia do vídeo</label>
+                        <div id="videoPreviewContent" class="bg-gray-100 dark:bg-zinc-700 rounded-lg border border-gray-300 dark:border-zinc-600 aspect-video flex items-center justify-center">
+                            <p class="text-gray-500 dark:text-zinc-400">Prévia do vídeo</p>
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-4">
+                    <div class="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-zinc-700">
                         <button onclick="closeMediaModal()" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors">
                             Cancelar
                         </button>
@@ -1497,20 +1360,9 @@ function openMediaModal() {
 
     document.body.appendChild(mediaModal);
 
-    setTimeout(() => {
-        initializeImageSelectionEvents();
-    }, 50);
-
     if (currentMedia && Object.keys(currentMedia).length > 0) {
         document.getElementById('clearMediaBtn').classList.remove('hidden');
     }
-
-    document.querySelectorAll('.media-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tab = this.getAttribute('data-tab');
-            switchMediaTab(tab);
-        });
-    });
 
     document.getElementById('imageUpload').addEventListener('change', function(e) {
         if (this.files && this.files[0]) {
@@ -1520,18 +1372,12 @@ function openMediaModal() {
                 const preview = document.getElementById('previewImage');
                 preview.src = e.target.result;
                 document.getElementById('imagePreview').classList.remove('hidden');
+                // Limpar o campo de vídeo se houver
+                document.getElementById('videoUrl').value = '';
+                document.getElementById('videoPreview').classList.add('hidden');
             }
 
             reader.readAsDataURL(this.files[0]);
-        }
-    });
-
-    document.getElementById('imageUrl').addEventListener('input', function() {
-        const url = this.value.trim();
-        if (url) {
-            const preview = document.getElementById('previewImage');
-            preview.src = url;
-            document.getElementById('imagePreview').classList.remove('hidden');
         }
     });
 
@@ -1539,62 +1385,24 @@ function openMediaModal() {
         const url = this.value.trim();
         if (url) {
             showVideoPreview(url);
+            // Limpar o upload de imagem se houver
+            document.getElementById('imageUpload').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
         } else {
             document.getElementById('videoPreview').classList.add('hidden');
         }
     });
 
+    // Preencher dados existentes
     if (currentMedia && Object.keys(currentMedia).length > 0) {
         if (currentMedia.type === 'image') {
-            document.querySelector('[data-tab="image"]').click();
-            document.getElementById('imageUrl').value = currentMedia.url || '';
-            if (currentMedia.url) {
-                document.getElementById('previewImage').src = currentMedia.url;
-                document.getElementById('imagePreview').classList.remove('hidden');
-            }
-
-            const style = currentMedia.style || 'centered';
-            const position = currentMedia.position || 'left';
-            const size = currentMedia.size || 'large';
-
-            setTimeout(() => {
-                const styleRadio = document.querySelector(`input[name="image_style"][value="${style}"]`);
-                if (styleRadio) {
-                    styleRadio.checked = true;
-                    styleRadio.closest('.style-option').classList.add('selected');
-                    togglePositionOptions(style);
-                }
-
-                const positionRadio = document.querySelector(`input[name="image_position"][value="${position}"]`);
-                if (positionRadio) {
-                    positionRadio.checked = true;
-                    positionRadio.closest('.position-option').classList.add('selected');
-                }
-
-                const sizeRadio = document.querySelector(`input[name="image_size"][value="${size}"]`);
-                if (sizeRadio) {
-                    sizeRadio.checked = true;
-                    sizeRadio.closest('.size-option').classList.add('selected');
-                }
-            }, 100);
-
+            document.getElementById('previewImage').src = currentMedia.url;
+            document.getElementById('imagePreview').classList.remove('hidden');
         } else if (currentMedia.type === 'video') {
-            document.querySelector('[data-tab="video"]').click();
             document.getElementById('videoUrl').value = currentMedia.url || '';
             if (currentMedia.url) {
                 showVideoPreview(currentMedia.url);
             }
-        }
-    }
-}
-
-function togglePositionOptions(style) {
-    const positionOptions = document.getElementById('positionOptions');
-    if (positionOptions) {
-        if (style === 'float') {
-            positionOptions.classList.remove('hidden');
-        } else {
-            positionOptions.classList.add('hidden');
         }
     }
 }
@@ -1605,22 +1413,6 @@ function clearMedia() {
         document.getElementById('mediaBtnText').textContent = 'Inserir mídia';
         closeMediaModal();
     }
-}
-
-function switchMediaTab(tab) {
-    document.querySelectorAll('.media-tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-100', 'dark:bg-blue-900/50', 'text-blue-700', 'dark:text-blue-300');
-        btn.classList.add('bg-gray-100', 'dark:bg-zinc-700', 'text-gray-700', 'dark:text-zinc-300');
-    });
-
-    document.querySelector(`[data-tab="${tab}"]`).classList.remove('bg-gray-100', 'dark:bg-zinc-700', 'text-gray-700', 'dark:text-zinc-300');
-    document.querySelector(`[data-tab="${tab}"]`).classList.add('bg-blue-100', 'dark:bg-blue-900/50', 'text-blue-700', 'dark:text-blue-300');
-
-    document.querySelectorAll('.media-content').forEach(content => {
-        content.classList.add('hidden');
-    });
-
-    document.getElementById(`${tab}Content`).classList.remove('hidden');
 }
 
 function showVideoPreview(url) {
@@ -1697,63 +1489,44 @@ async function uploadImage(file) {
 }
 
 async function insertMedia() {
-    const activeTab = document.querySelector('.media-tab-btn.bg-blue-100, .media-tab-btn.dark\\:bg-blue-900\\/50').getAttribute('data-tab');
     let mediaData = {};
 
-    if (activeTab === 'image') {
-        const imageUrl = document.getElementById('imageUrl').value;
-        const imageFile = document.getElementById('imageUpload').files[0];
+    const imageFile = document.getElementById('imageUpload').files[0];
+    const videoUrl = document.getElementById('videoUrl').value.trim();
 
-        if (imageFile) {
-            try {
-                const previewDiv = document.getElementById('imagePreview');
-                previewDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Processando imagem...</div>';
-                previewDiv.classList.remove('hidden');
+    // Prioridade: se há arquivo de imagem, usar ele
+    if (imageFile) {
+        try {
+            const previewDiv = document.getElementById('imagePreview');
+            previewDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Processando imagem...</div>';
+            previewDiv.classList.remove('hidden');
 
-                const uploadedImageUrl = await uploadImage(imageFile);
+            const uploadedImageUrl = await uploadImage(imageFile);
 
-                mediaData = {
-                    type: 'image',
-                    url: uploadedImageUrl,
-                    alt: 'Imagem inserida no campo',
-                    originalName: imageFile.name
-                };
-            } catch (error) {
-                alert('Erro ao fazer upload da imagem: ' + error.message);
-                return;
-            }
-        } else if (imageUrl) {
             mediaData = {
                 type: 'image',
-                url: imageUrl,
-                alt: 'Imagem inserida no campo'
+                url: uploadedImageUrl,
+                alt: 'Imagem inserida no campo',
+                originalName: imageFile.name
             };
+        } catch (error) {
+            alert('Erro ao fazer upload da imagem: ' + error.message);
+            return;
         }
+    }
+    // Se não há imagem, verificar se há URL de vídeo
+    else if (videoUrl) {
+        mediaData = {
+            type: 'video',
+            url: videoUrl
+        };
 
-        if (mediaData.type === 'image') {
-            const style = document.querySelector('input[name="image_style"]:checked')?.value || 'centered';
-            const position = document.querySelector('input[name="image_position"]:checked')?.value || 'left';
-            const size = document.querySelector('input[name="image_size"]:checked')?.value || 'large';
-
-            mediaData.style = style;
-            mediaData.position = position;
-            mediaData.size = size;
-        }
-    } else if (activeTab === 'video') {
-        const videoUrl = document.getElementById('videoUrl').value;
-        if (videoUrl) {
-            mediaData = {
-                type: 'video',
-                url: videoUrl
-            };
-
-            if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-                mediaData.service = 'youtube';
-            } else if (videoUrl.includes('vimeo.com')) {
-                mediaData.service = 'vimeo';
-            } else {
-                mediaData.service = 'direct';
-            }
+        if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+            mediaData.service = 'youtube';
+        } else if (videoUrl.includes('vimeo.com')) {
+            mediaData.service = 'vimeo';
+        } else {
+            mediaData.service = 'direct';
         }
     }
 
@@ -1762,7 +1535,7 @@ async function insertMedia() {
         document.getElementById('mediaBtnText').textContent = 'Editar mídia';
         closeMediaModal();
     } else {
-        alert('Por favor, insira uma mídia válida');
+        alert('Por favor, insira uma imagem ou URL de vídeo');
     }
 }
 
