@@ -22,7 +22,7 @@ try {
         SELECT id, email, user_name, pro_expires_at
         FROM users
         WHERE pro_expires_at < NOW()
-        AND user_role = 'pro'
+        AND plan = 'pro'
     ");
     $stmt->execute();
     $expiredUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -37,7 +37,7 @@ try {
     foreach ($expiredUsers as $user) {
         $updateStmt = $pdo->prepare("
             UPDATE users
-            SET user_role = 'free',
+            SET plan = 'free',
                 pro_expires_at = NULL
             WHERE id = :user_id
         ");

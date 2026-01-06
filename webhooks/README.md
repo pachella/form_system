@@ -69,16 +69,16 @@ curl -X POST https://formtalk.app/webhooks/ticto.php \
 ### Quando usuário assina:
 1. Ticto envia webhook com evento de ativação
 2. Sistema busca usuário pelo email
-3. Atualiza: `user_role = 'pro'` e `pro_expires_at = +30 dias`
+3. Atualiza: `plan = 'pro'` e `pro_expires_at = +30 dias`
 
 ### Quando cancelar ou falhar:
 1. Ticto envia webhook de cancelamento
-2. Sistema atualiza: `user_role = 'free'` e `pro_expires_at = NULL`
+2. Sistema atualiza: `plan = 'free'` e `pro_expires_at = NULL`
 
 ### Expiração automática (CRON):
 1. CRON roda diariamente à meia-noite
-2. Busca usuários com `pro_expires_at < NOW()` e `user_role = 'pro'`
-3. Atualiza para `user_role = 'free'` e `pro_expires_at = NULL`
+2. Busca usuários com `pro_expires_at < NOW()` e `plan = 'pro'`
+3. Atualiza para `plan = 'free'` e `pro_expires_at = NULL`
 
 ## Logs
 
@@ -99,7 +99,8 @@ users:
   - id
   - email
   - user_name
-  - user_role (free/pro)
+  - role (admin/client)
+  - plan (free/pro) ← Esta coluna é atualizada
   - pro_expires_at (DATETIME) ← NOVA COLUNA
 ```
 

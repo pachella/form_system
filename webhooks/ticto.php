@@ -34,7 +34,7 @@ try {
     file_put_contents($logFile, date('[Y-m-d H:i:s] ') . "Processando evento: {$event} para {$customerEmail}\n", FILE_APPEND);
 
     // Buscar usuário pelo email
-    $stmt = $pdo->prepare("SELECT id, email, user_role FROM users WHERE email = :email LIMIT 1");
+    $stmt = $pdo->prepare("SELECT id, email, plan FROM users WHERE email = :email LIMIT 1");
     $stmt->execute([':email' => $customerEmail]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -57,7 +57,7 @@ try {
 
             $updateStmt = $pdo->prepare("
                 UPDATE users
-                SET user_role = 'pro',
+                SET plan = 'pro',
                     pro_expires_at = :expires_at
                 WHERE id = :user_id
             ");
@@ -85,7 +85,7 @@ try {
             // DESATIVAR PRO
             $updateStmt = $pdo->prepare("
                 UPDATE users
-                SET user_role = 'free',
+                SET plan = 'free',
                     pro_expires_at = NULL
                 WHERE id = :user_id
             ");
