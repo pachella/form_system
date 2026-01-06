@@ -412,23 +412,21 @@ function checkFlows() {
             }
         }
 
-        // Se as condições foram atendidas, pular para o primeiro campo APÓS o fluxo
+        // Se as condições foram atendidas, pular para o primeiro campo DO fluxo
         if (conditionsMet) {
-            const flowOrderIndex = parseInt(flow.order_index);
-
-            console.log('🎯 Fluxo ativado:', flow.label, 'Order Index:', flowOrderIndex);
+            console.log('🎯 Fluxo ativado:', flow.label, 'Flow ID:', flow.id);
 
             // Marcar fluxo como ativo
             activeFlowId = flow.id;
-            activeFlowOrderIndex = flowOrderIndex;
+            activeFlowOrderIndex = parseInt(flow.order_index);
 
-            // Encontrar o primeiro slide com order_index MAIOR que o do fluxo
+            // Encontrar o primeiro slide que PERTENCE a este fluxo (flow_id == flow.id)
             for (let i = 0; i < totalSlides; i++) {
-                const slideOrderIndex = parseInt(slides[i].getAttribute('data-order-index'));
+                const slideFlowId = slides[i].getAttribute('data-flow-id');
 
-                if (slideOrderIndex > flowOrderIndex) {
-                    console.log('✅ Pulando para slide:', i, 'Order Index:', slideOrderIndex);
-                    return i; // Retornar o índice do primeiro slide após o fluxo
+                if (slideFlowId == flow.id) {
+                    console.log('✅ Pulando para primeiro campo do fluxo:', i, 'Flow ID:', slideFlowId);
+                    return i; // Retornar o índice do primeiro campo do fluxo
                 }
             }
         }
@@ -561,44 +559,73 @@ function nextQuestion() {
     // Se um fluxo foi ativado, pular para o índice do fluxo
     if (targetFlowIndex !== -1) {
         currentSlide = targetFlowIndex;
-    } else {
-        currentSlide++;
+    } else if (activeFlowId !== null) {
+        // Estamos em um fluxo ativo - navegar apenas entre campos deste fluxo
+        console.log('📂 Navegando dentro do fluxo ativo:', activeFlowId);
 
-        // Verificar se estamos saindo de um fluxo ativo e devemos usar exit_to_field_id
-        if (activeFlowId !== null && currentSlide < totalSlides) {
-            const currentOrderIndex = parseInt(slides[currentSlide].getAttribute('data-order-index'));
+        // Procurar o próximo campo com o mesmo flow_id
+        let foundNext = false;
+        for (let i = currentSlide + 1; i < totalSlides; i++) {
+            const slideFlowId = slides[i].getAttribute('data-flow-id');
 
-            // Procurar o próximo divisor de fluxo após o fluxo ativo
-            const nextFlowOrderIndex = flows
-                .map(f => parseInt(f.order_index))
-                .filter(order => order > activeFlowOrderIndex)
-                .sort((a, b) => a - b)[0];
-
-            // Se alcançamos o próximo divisor ou não há próximo divisor
-            if (!nextFlowOrderIndex || currentOrderIndex >= nextFlowOrderIndex) {
-                // Buscar o fluxo ativo para pegar o exit_to_field_id
-                const activeFlow = flows.find(f => f.id == activeFlowId);
-
-                if (activeFlow && activeFlow.exit_to_field_id) {
-                    console.log('🚪 Saindo do fluxo:', activeFlow.label, '→ Indo para campo:', activeFlow.exit_to_field_id);
-
-                    // Encontrar o índice do slide do campo de destino
-                    for (let i = 0; i < totalSlides; i++) {
-                        const slideFieldId = slides[i].getAttribute('data-field-id');
-                        if (slideFieldId == activeFlow.exit_to_field_id) {
-                            currentSlide = i;
-                            activeFlowId = null; // Desativar fluxo
-                            activeFlowOrderIndex = null;
-                            break;
-                        }
-                    }
-                } else {
-                    // Não há exit_to_field_id, desativar fluxo e continuar normalmente
-                    activeFlowId = null;
-                    activeFlowOrderIndex = null;
-                }
+            if (slideFlowId == activeFlowId) {
+                console.log('➡️ Próximo campo do fluxo:', i);
+                currentSlide = i;
+                foundNext = true;
+                break;
             }
         }
+
+        // Se não encontramos próximo campo do fluxo, sair do fluxo
+        if (!foundNext) {
+            console.log('🚪 Fim do fluxo. Saindo...');
+
+            const activeFlow = flows.find(f => f.id == activeFlowId);
+
+            if (activeFlow && activeFlow.exit_to_field_id) {
+                console.log('↪️ Indo para campo de saída:', activeFlow.exit_to_field_id);
+
+                // Encontrar o índice do slide do campo de destino
+                let foundExit = false;
+                for (let i = 0; i < totalSlides; i++) {
+                    const slideFieldId = slides[i].getAttribute('data-field-id');
+                    if (slideFieldId == activeFlow.exit_to_field_id) {
+                        currentSlide = i;
+                        foundExit = true;
+                        break;
+                    }
+                }
+
+                if (!foundExit) {
+                    // exit_to_field_id não encontrado, continuar normalmente
+                    currentSlide++;
+                }
+            } else {
+                // Não há exit_to_field_id, ir para o próximo campo livre (sem flow_id)
+                console.log('➡️ Buscando próximo campo livre...');
+                let foundFree = false;
+                for (let i = currentSlide + 1; i < totalSlides; i++) {
+                    const slideFlowId = slides[i].getAttribute('data-flow-id');
+                    if (!slideFlowId || slideFlowId === '') {
+                        currentSlide = i;
+                        foundFree = true;
+                        break;
+                    }
+                }
+
+                if (!foundFree) {
+                    // Não há mais campos livres, incrementar normalmente
+                    currentSlide++;
+                }
+            }
+
+            // Desativar fluxo
+            activeFlowId = null;
+            activeFlowOrderIndex = null;
+        }
+    } else {
+        // Navegação normal - incrementar e pular slides condicionalmente ocultos
+        currentSlide++;
 
         // Pular slides condicionalmente ocultos
         while (currentSlide < totalSlides && slides[currentSlide].getAttribute('data-conditionally-hidden') === 'true') {

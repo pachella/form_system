@@ -320,7 +320,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/imask"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-    <script src="/scripts/js/masks.js?v=10.3.1"></script>
+    <script src="/scripts/js/masks.js?v=10.3.2"></script>
 
     <!-- Fonte personalizada -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -328,7 +328,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link href="https://fonts.googleapis.com/css2?family=<?= $fontFamilyUrl ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=10.3.1">
+    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=10.3.2">
 
     <style>
         :root {
@@ -472,6 +472,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                              data-index="<?= $index ?>"
                              data-field-id="<?= $field['id'] ?>"
                              data-order-index="<?= $field['order_index'] ?>"
+                             data-flow-id="<?= $field['flow_id'] ?? '' ?>"
                              data-conditional-logic="<?= htmlspecialchars($field['conditional_logic'] ?? '') ?>"
                              style="<?= $index === 0 ? '' : 'display: none;' ?>">
 
@@ -739,7 +740,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <?php endif; ?>
 
     <!-- Scripts -->
-    <script src="/modules/forms/public/assets/scripts.js?v=10.3.1"></script>
+    <script src="/modules/forms/public/assets/scripts.js?v=10.3.2"></script>
 
 </body>
 </html>
