@@ -366,6 +366,16 @@ function checkFlows() {
 
         if (conditions.length === 0) continue;
 
+        // Verificar se todos os campos usados nas condições já foram respondidos
+        let allConditionFieldsAnswered = true;
+        for (const condition of conditions) {
+            if (!responses[condition.field_id] || responses[condition.field_id] === '') {
+                allConditionFieldsAnswered = false;
+                break;
+            }
+        }
+        if (!allConditionFieldsAnswered) continue; // Pular este fluxo se os campos condicionais não foram respondidos
+
         let conditionsMet = conditionsType === 'all';
 
         for (const condition of conditions) {
