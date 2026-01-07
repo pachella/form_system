@@ -132,8 +132,8 @@ foreach ($recentHistory as $msg) {
 }
 
 try {
-    // Chamar API do Qwen
-    $response = callQwenAPI($messages);
+    // Chamar API do Groq
+    $response = callGroqAPI($messages);
 
     // Verificar se a IA sinalizou criação de formulário
     $shouldCreate = false;
@@ -156,7 +156,7 @@ try {
     ]);
 
 } catch (Exception $e) {
-    error_log("Erro na API do Qwen: " . $e->getMessage());
+    error_log("Erro na API do Groq: " . $e->getMessage());
     echo json_encode([
         'success' => false,
         'error' => 'Erro ao processar sua mensagem. Tente novamente.'
@@ -164,13 +164,20 @@ try {
 }
 
 /**
- * Chamar API do Qwen
+ * Chamar API do Groq
+ *
+ * Para obter sua API key:
+ * 1. Acesse: https://console.groq.com/
+ * 2. Faça login (pode usar Google)
+ * 3. Vá em "API Keys"
+ * 4. Clique em "Create API Key"
+ * 5. Cole a key abaixo onde diz 'SUA_API_KEY_AQUI'
  */
-function callQwenAPI($messages) {
-    // TODO: Adicionar sua API key do Qwen aqui
-    $apiKey = getenv('QWEN_API_KEY') ?: 'SUA_API_KEY_AQUI';
+function callGroqAPI($messages) {
+    // ⚠️ COLE SUA API KEY DO GROQ AQUI ⚠️
+    $apiKey = getenv('GROQ_API_KEY') ?: 'SUA_API_KEY_AQUI';
 
-    $ch = curl_init('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions');
+    $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
 
     curl_setopt_array($ch, [
         CURLOPT_POST => true,
@@ -180,7 +187,7 @@ function callQwenAPI($messages) {
             'Authorization: Bearer ' . $apiKey
         ],
         CURLOPT_POSTFIELDS => json_encode([
-            'model' => 'qwen-plus',  // ou qwen-turbo para mais barato
+            'model' => 'llama-3.1-70b-versatile',  // Modelo mais inteligente (GRATUITO!)
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => 2000
@@ -197,7 +204,7 @@ function callQwenAPI($messages) {
     curl_close($ch);
 
     if ($httpCode !== 200) {
-        error_log("Qwen API Error - HTTP $httpCode: $response");
+        error_log("Groq API Error - HTTP $httpCode: $response");
         throw new Exception("Erro na API (HTTP $httpCode)");
     }
 

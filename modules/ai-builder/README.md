@@ -4,57 +4,63 @@ Módulo que permite criar formulários através de conversas com Inteligência A
 
 ## 📋 Funcionalidades
 
-- **Chat interativo** com IA (Qwen)
+- **Chat interativo** com IA (Groq - Llama 3.1)
 - **Criação automática** de formulários baseada em conversas
 - **Suporte a todos os tipos de campos** do sistema
 - **Validação inteligente** de estrutura
 - **Integração perfeita** com o sistema existente
+- **100% GRATUITO** para uso pessoal/desenvolvimento
 
 ## 🔧 Configuração
 
-### 1. Obter API Key do Qwen
+### 1. Obter API Key do Groq (2 minutos!)
 
-1. Acesse: https://dashscope.aliyun.com/
-2. Crie uma conta (se necessário)
-3. Acesse a seção de API Keys
-4. Gere uma nova API key
+1. Acesse: https://console.groq.com/
+2. Faça login (pode usar Google - super rápido!)
+3. Vá em "API Keys"
+4. Clique em "Create API Key"
+5. Copie a key gerada
 
 ### 2. Configurar API Key
 
 Edite o arquivo: `/modules/ai-builder/api/chat.php`
 
-Encontre a linha:
+Encontre a linha 178:
 
 ```php
-$apiKey = getenv('QWEN_API_KEY') ?: 'SUA_API_KEY_AQUI';
+$apiKey = getenv('GROQ_API_KEY') ?: 'SUA_API_KEY_AQUI';
 ```
 
 **Opção 1 - Variável de Ambiente (Recomendado):**
 ```bash
-export QWEN_API_KEY="sua_key_aqui"
+export GROQ_API_KEY="sua_key_aqui"
 ```
 
 **Opção 2 - Diretamente no código:**
 ```php
-$apiKey = 'sk-xxxxxxxxxxxxx';
+$apiKey = 'gsk_xxxxxxxxxxxxx';  // ← Cole sua key aqui
 ```
 
-### 3. Escolher Modelo
+### 3. Modelos Disponíveis
 
-No mesmo arquivo `chat.php`, você pode alterar o modelo:
+No arquivo `chat.php`, você pode alterar o modelo (linha 190):
 
 ```php
-'model' => 'qwen-plus',  // Mais inteligente, mais caro
+'model' => 'llama-3.1-70b-versatile',  // Recomendado! (Gratuito)
 // ou
-'model' => 'qwen-turbo',  // Mais rápido, mais barato
+'model' => 'llama-3.1-8b-instant',     // Mais rápido (Gratuito)
+// ou
+'model' => 'mixtral-8x7b-32768',       // Alternativa (Gratuito)
 ```
 
 ## 💰 Custos
 
-- **qwen-turbo**: ~$0.0003 por 1K tokens (mais barato)
-- **qwen-plus**: ~$0.002 por 1K tokens (melhor qualidade)
+✨ **100% GRATUITO!** ✨
 
-Uma conversa típica usa ~500-1000 tokens, custando menos de $0.002.
+- Sem cartão de crédito necessário
+- Sem limites restritivos para desenvolvimento
+- Extremamente rápido (mais rápido que GPT-4!)
+- Perfeito para produção de pequena/média escala
 
 ## 🎯 Como Usar
 
@@ -117,7 +123,7 @@ A IA pode criar formulários com todos os tipos:
 ### Erro: "Resposta inválida da API"
 - Verifique se a API key está correta
 - Verifique sua conexão com internet
-- Verifique se tem créditos na conta Qwen
+- Verifique se a key foi gerada corretamente em console.groq.com
 
 ### Formulário não foi criado
 - Verifique os logs do navegador (F12)
@@ -131,10 +137,14 @@ A IA pode criar formulários com todos os tipos:
 
 ## 📝 Changelog
 
-### v1.0.0 (2025-01-07)
+### v11.0.1 (2025-01-07)
+- 🔄 Migrado para Groq API (gratuito e mais rápido!)
+- 🚀 Modelo Llama 3.1 70B (excelente para estruturação)
+- ⚡ Performance melhorada
+
+### v11.0.0 (2025-01-07)
 - 🎉 Lançamento inicial
 - ✨ Chat interativo com IA
-- 🤖 Integração com Qwen API
 - 📋 Criação automática de formulários
 - 🎨 Interface moderna e responsiva
 
