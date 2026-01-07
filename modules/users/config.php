@@ -4,6 +4,6 @@ return [
     'label' => 'Usuários',
     'icon' => 'users',
     'url' => '/users/list',
-    'order' => 3,
+    'order' => 5,
     'roles' => ['admin']  // Só admin
 ];
