@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $pageTitle = "Criar com IA";
 require_once __DIR__ . '/../../views/layout/header.php';
+require_once __DIR__ . '/../../views/layout/sidebar.php';
 ?>
 
 <div class="max-w-5xl mx-auto">
@@ -38,7 +39,7 @@ require_once __DIR__ . '/../../views/layout/header.php';
         <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4">
             <!-- Mensagem inicial da IA -->
             <div class="flex gap-3">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#4EA44B] flex items-center justify-center text-white font-semibold">
                     AI
                 </div>
                 <div class="flex-1">
@@ -64,13 +65,13 @@ require_once __DIR__ . '/../../views/layout/header.php';
                     type="text"
                     id="userInput"
                     placeholder="Digite sua mensagem aqui..."
-                    class="flex-1 px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100"
+                    class="flex-1 px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100"
                     autocomplete="off"
                 >
                 <button
                     type="submit"
                     id="sendBtn"
-                    class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+                    class="px-6 py-3 bg-[#4EA44B] hover:bg-[#45943f] text-white rounded-lg font-semibold transition-all flex items-center gap-2"
                 >
                     <i class="fas fa-paper-plane"></i>
                     Enviar
@@ -83,7 +84,7 @@ require_once __DIR__ . '/../../views/layout/header.php';
     </div>
 </div>
 
-<script src="/modules/ai-builder/assets/chat.js?v=11.0.2"></script>
+<script src="/modules/ai-builder/assets/chat.js?v=11.0.3"></script>
 
 <?php
 require_once __DIR__ . '/../../views/layout/footer.php';

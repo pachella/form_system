@@ -75,7 +75,7 @@ function addUserMessage(text) {
     messageDiv.className = 'flex gap-3 justify-end';
     messageDiv.innerHTML = `
         <div class="flex-1 max-w-[80%]">
-            <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg p-4">
+            <div class="bg-[#4EA44B] text-white rounded-lg p-4">
                 <p>${escapeHtml(text)}</p>
             </div>
         </div>
@@ -92,7 +92,7 @@ function addAIMessage(text) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'flex gap-3';
     messageDiv.innerHTML = `
-        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#4EA44B] flex items-center justify-center text-white font-semibold">
             AI
         </div>
         <div class="flex-1">
@@ -200,7 +200,7 @@ function resetChat() {
         conversationHistory = [];
         chatMessages.innerHTML = `
             <div class="flex gap-3">
-                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#4EA44B] flex items-center justify-center text-white font-semibold">
                     AI
                 </div>
                 <div class="flex-1">
