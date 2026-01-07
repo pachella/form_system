@@ -53,7 +53,7 @@ if ($field['type'] === 'message'):
 if ($field['type'] === 'welcome'):
     $field_rendered = true;
 ?>
-    <div class="field-item bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg p-4 hover:shadow-md transition-shadow" data-field-id="<?= $field['id'] ?>" style="cursor: not-allowed;">
+    <div class="field-item bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg p-4 hover:shadow-md transition-shadow" data-field-id="<?= $field['id'] ?>" data-field-type="welcome" style="cursor: not-allowed;">
         <div class="flex items-start justify-between">
             <div class="flex items-start gap-3 flex-1">
                 <div class="text-green-600 dark:text-green-400 mt-1">

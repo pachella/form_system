@@ -4,6 +4,7 @@ ob_clean();
 session_start();
 require_once(__DIR__ . "/../../../core/db.php");
 require_once __DIR__ . '/../../../core/PermissionManager.php';
+require_once __DIR__ . '/../../../core/PlanService.php';
 
 header('Content-Type: text/plain; charset=utf-8');
 
@@ -25,6 +26,13 @@ try {
     $form_id = trim($_POST['form_id'] ?? '');
     $field_id = trim($_POST['field_id'] ?? '');
     $type = trim($_POST['type'] ?? '');
+
+    // Verificar se tipo 'file' requer plano PRO
+    if ($type === 'file' && !PlanService::hasProAccess()) {
+        http_response_code(403);
+        echo "Campo 'Upload de Arquivo' é exclusivo para usuários PRO";
+        exit();
+    }
     $label = trim($_POST['label'] ?? '');
     $description = trim($_POST['description'] ?? '');
     $placeholder = ''; // Placeholder é gerado automaticamente no frontend

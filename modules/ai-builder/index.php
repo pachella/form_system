@@ -2,10 +2,64 @@
 session_start();
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/PermissionManager.php';
+require_once __DIR__ . '/../../core/PlanService.php';
 
 // Verificar se o usuário está logado
 if (!isset($_SESSION['user_id'])) {
     header('Location: /login.php');
+    exit();
+}
+
+// Verificar se tem acesso PRO
+if (!PlanService::hasProAccess()) {
+    $pageTitle = "Criar com IA";
+    require_once __DIR__ . '/../../views/layout/header.php';
+    require_once __DIR__ . '/../../views/layout/sidebar.php';
+    ?>
+
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-12 text-center text-white">
+            <div class="mb-6">
+                <i data-feather="zap" class="w-20 h-20 mx-auto mb-4 stroke-1"></i>
+                <h1 class="text-4xl font-bold mb-3">🤖 Criar com IA</h1>
+                <p class="text-xl opacity-90">Recurso exclusivo para usuários PRO</p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 mb-8 max-w-2xl mx-auto">
+                <h2 class="text-2xl font-semibold mb-4">✨ O que você ganha com a IA:</h2>
+                <ul class="text-left space-y-3 text-lg">
+                    <li class="flex items-start">
+                        <span class="mr-3">✅</span>
+                        <span>Crie formulários completos apenas descrevendo o que precisa</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-3">✅</span>
+                        <span>Copy persuasivo profissional em cada campo</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-3">✅</span>
+                        <span>Sugestões inteligentes de campos e validações</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-3">✅</span>
+                        <span>Economize horas de trabalho criando formulários</span>
+                    </li>
+                </ul>
+            </div>
+
+            <a href="/modules/users/settings.php" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-600 font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl text-lg">
+                <i data-feather="star" class="w-5 h-5"></i>
+                Fazer Upgrade para PRO
+            </a>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+    </script>
+
+    <?php
+    require_once __DIR__ . '/../../views/layout/footer.php';
     exit();
 }
 

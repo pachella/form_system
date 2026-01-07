@@ -219,13 +219,8 @@ if (fieldsList) {
             }
 
             // Bloquear campos do tipo welcome
-            const fieldId = target.dataset.fieldId;
-            if (fieldId) {
-                // Verificar se é welcome pelo estilo (cursor: not-allowed)
-                const hasWelcomeLock = target.querySelector('[style*="cursor: not-allowed"]');
-                if (hasWelcomeLock) {
-                    return true; // Bloquear drag
-                }
+            if (target.dataset.fieldType === 'welcome') {
+                return true;
             }
 
             return false; // Permitir drag

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../../core/db.php';
+require_once __DIR__ . '/../../../core/PlanService.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -8,6 +9,13 @@ header('Content-Type: application/json; charset=utf-8');
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Não autorizado']);
+    exit();
+}
+
+// Verificar plano PRO
+if (!PlanService::hasProAccess()) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'error' => 'Este recurso é exclusivo para usuários PRO']);
     exit();
 }
 
