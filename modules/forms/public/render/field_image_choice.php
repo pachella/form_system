@@ -12,7 +12,7 @@ $inputType = $field['allow_multiple'] ? 'checkbox' : 'radio';
 $fieldNameSuffix = $field['allow_multiple'] ? '[]' : '';
 ?>
 
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
     <?php foreach ($options as $optIndex => $option): ?>
         <?php
         $label = is_array($option) ? $option['label'] : $option;

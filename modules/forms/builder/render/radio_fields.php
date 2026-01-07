@@ -9,7 +9,7 @@ if ($field['type'] === 'radio'):
     $field_rendered = true;
     $options = json_decode($field['options'], true) ?: [];
 ?>
-    <div class="field-item bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded-lg p-4 cursor-move" data-field-id="<?= $field['id'] ?>">
+    <div class="field-item bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded-lg p-4 cursor-move relative" data-field-id="<?= $field['id'] ?>">
         <div class="flex items-start justify-between">
             <div class="flex items-start gap-3 flex-1">
                 <div class="text-gray-400 dark:text-zinc-500 mt-1">
@@ -19,12 +19,6 @@ if ($field['type'] === 'radio'):
                     <div class="flex items-center gap-2 mb-1">
                         <i class="fas fa-circle-dot text-gray-400 dark:text-zinc-500"></i>
                         <h3 class="font-medium text-gray-900 dark:text-zinc-100"><?= htmlspecialchars($field['label']) ?></h3>
-                        <?php if ($field['required']): ?>
-                            <span class="text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded">Obrigatório</span>
-                        <?php endif; ?>
-                        <?php if (isset($field['allow_multiple']) && $field['allow_multiple']): ?>
-                            <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 px-2 py-0.5 rounded">Múltiplas respostas</span>
-                        <?php endif; ?>
                     </div>
                     <?php if (!empty($field['description'])): ?>
                         <p class="text-sm text-gray-600 dark:text-zinc-400 mb-1"><?= htmlspecialchars($field['description']) ?></p>
@@ -69,6 +63,18 @@ if ($field['type'] === 'radio'):
                 </button>
             </div>
         </div>
+
+        <!-- Tags no canto inferior direito -->
+        <?php if ($field['required'] || (isset($field['allow_multiple']) && $field['allow_multiple'])): ?>
+            <div class="absolute bottom-2 right-2 flex gap-1">
+                <?php if ($field['required']): ?>
+                    <span class="text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded">Obrigatório</span>
+                <?php endif; ?>
+                <?php if (isset($field['allow_multiple']) && $field['allow_multiple']): ?>
+                    <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 px-2 py-0.5 rounded">Múltiplas respostas</span>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 <?php
 endif;
@@ -79,7 +85,7 @@ if ($field['type'] === 'image_choice'):
     $config = json_decode($field['config'], true) ?: [];
     $options = $config['options'] ?? [];
 ?>
-    <div class="field-item bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded-lg p-4 cursor-move" data-field-id="<?= $field['id'] ?>">
+    <div class="field-item bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded-lg p-4 cursor-move relative" data-field-id="<?= $field['id'] ?>">
         <div class="flex items-start justify-between">
             <div class="flex items-start gap-3 flex-1">
                 <div class="text-gray-400 dark:text-zinc-500 mt-1">
@@ -89,12 +95,6 @@ if ($field['type'] === 'image_choice'):
                     <div class="flex items-center gap-2 mb-1">
                         <i class="fas fa-images text-green-600 dark:text-green-400"></i>
                         <h3 class="font-medium text-gray-900 dark:text-zinc-100"><?= htmlspecialchars($field['label']) ?></h3>
-                        <?php if ($field['required']): ?>
-                            <span class="text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded">Obrigatório</span>
-                        <?php endif; ?>
-                        <?php if (isset($field['allow_multiple']) && $field['allow_multiple']): ?>
-                            <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 px-2 py-0.5 rounded">Múltiplas respostas</span>
-                        <?php endif; ?>
                     </div>
                     <?php if (!empty($field['description'])): ?>
                         <p class="text-sm text-gray-600 dark:text-zinc-400 mb-1"><?= htmlspecialchars($field['description']) ?></p>
@@ -121,6 +121,18 @@ if ($field['type'] === 'image_choice'):
                 </button>
             </div>
         </div>
+
+        <!-- Tags no canto inferior direito -->
+        <?php if ($field['required'] || (isset($field['allow_multiple']) && $field['allow_multiple'])): ?>
+            <div class="absolute bottom-2 right-2 flex gap-1">
+                <?php if ($field['required']): ?>
+                    <span class="text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded">Obrigatório</span>
+                <?php endif; ?>
+                <?php if (isset($field['allow_multiple']) && $field['allow_multiple']): ?>
+                    <span class="text-xs bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400 px-2 py-0.5 rounded">Múltiplas respostas</span>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
     </div>
 <?php
 endif;

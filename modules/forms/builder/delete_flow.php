@@ -47,13 +47,17 @@ try {
         }
     }
 
-    // Deletar o fluxo
+    // Primeiro, deletar todos os campos que estão dentro deste fluxo
+    $deleteFieldsStmt = $pdo->prepare("DELETE FROM form_fields WHERE flow_id = :flow_id");
+    $deleteFieldsStmt->execute([':flow_id' => $flow_id]);
+
+    // Depois, deletar o fluxo
     $stmt = $pdo->prepare("DELETE FROM form_flows WHERE id = :flow_id");
     $stmt->execute([':flow_id' => $flow_id]);
 
     echo json_encode([
         'success' => true,
-        'message' => 'Fluxo removido com sucesso'
+        'message' => 'Fluxo e seus campos removidos com sucesso'
     ]);
 
 } catch (Exception $e) {
