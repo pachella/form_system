@@ -6,7 +6,7 @@ $showComplementary = !empty($config['show_complementary_fields']);
 
 <!-- Campo principal: Número do RG -->
 <input type="text"
-       name="<?= $fieldName ?>"
+       name="<?= $showComplementary ? $fieldName . '[rg_number]' : $fieldName ?>"
        id="<?= $fieldName ?>"
        placeholder="00.000.000-0"
        <?= $field['required'] ? 'required' : '' ?>

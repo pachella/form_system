@@ -251,6 +251,35 @@ require_once __DIR__ . '/../builder/builder_sidebar.php';
                                             }
                                             break;
 
+                                        case 'rg':
+                                            // Campo RG - pode ser JSON com subcampos ou texto simples
+                                            $rgData = json_decode($answer['answer'], true);
+                                            if (is_array($rgData) && isset($rgData['rg_number'])) {
+                                                // RG com campos complementares (JSON)
+                                                echo '<div class="space-y-2">';
+                                                echo '<p class="text-gray-800 dark:text-zinc-200"><strong>RG:</strong> ' . htmlspecialchars($rgData['rg_number']) . '</p>';
+                                                if (!empty($rgData['birth_date'])) {
+                                                    echo '<p class="text-gray-700 dark:text-zinc-300 text-sm"><strong>Data de Nascimento:</strong> ' . htmlspecialchars($rgData['birth_date']) . '</p>';
+                                                }
+                                                if (!empty($rgData['nationality'])) {
+                                                    echo '<p class="text-gray-700 dark:text-zinc-300 text-sm"><strong>Naturalidade:</strong> ' . htmlspecialchars($rgData['nationality']) . '</p>';
+                                                }
+                                                if (!empty($rgData['issuing_agency'])) {
+                                                    echo '<p class="text-gray-700 dark:text-zinc-300 text-sm"><strong>Órgão Expedidor:</strong> ' . htmlspecialchars($rgData['issuing_agency']) . '</p>';
+                                                }
+                                                if (!empty($rgData['issuing_state'])) {
+                                                    echo '<p class="text-gray-700 dark:text-zinc-300 text-sm"><strong>UF de Expedição:</strong> ' . htmlspecialchars($rgData['issuing_state']) . '</p>';
+                                                }
+                                                if (!empty($rgData['issue_date'])) {
+                                                    echo '<p class="text-gray-700 dark:text-zinc-300 text-sm"><strong>Data de Expedição:</strong> ' . htmlspecialchars($rgData['issue_date']) . '</p>';
+                                                }
+                                                echo '</div>';
+                                            } else {
+                                                // RG simples (só o número)
+                                                echo '<p class="text-gray-800 dark:text-zinc-200">' . $answerText . '</p>';
+                                            }
+                                            break;
+
                                         default:
                                             // Texto padrão
                                             echo '<p class="text-gray-800 dark:text-zinc-200">' . $answerText . '</p>';
@@ -307,6 +336,16 @@ require_once __DIR__ . '/../builder/builder_sidebar.php';
     </div>
 </div>
 
+<script>
+// Variáveis globais do PHP
+const FORM_ID = <?= $response['form_id'] ?>;
+const IS_PRO_USER = <?= PlanService::hasProAccess() ? 'true' : 'false' ?>;
+const USER_PLAN = "<?= PlanService::getCurrentPlan() ?>";
+const USER_NAME = "<?= htmlspecialchars($_SESSION['user_name'] ?? '', ENT_QUOTES) ?>";
+const USER_EMAIL = "<?= htmlspecialchars($_SESSION['user_email'] ?? '', ENT_QUOTES) ?>";
+window.userRole = "<?= htmlspecialchars($_SESSION['user_role'] ?? '', ENT_QUOTES) ?>";
+window.userPlan = "<?= PlanService::getCurrentPlan() ?>";
+</script>
 <script src="../../../scripts/js/global/theme.js"></script>
 <script src="../../../scripts/js/global/ui.js"></script>
 <script src="../../../scripts/js/global/modals.js"></script>

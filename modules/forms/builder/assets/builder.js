@@ -1958,6 +1958,9 @@ function populateFieldOptions(ruleId) {
         .then(res => res.json())
         .then(fields => {
             fieldSelect.innerHTML = '<option value="">Selecione o campo...</option>';
+            // Adicionar opção especial de soma de pontuação
+            fieldSelect.innerHTML += `<option value="_score_total" data-type="score">📊 Soma da Pontuação</option>`;
+            fieldSelect.innerHTML += `<option disabled>──────────</option>`;
             fields.forEach(field => {
                 fieldSelect.innerHTML += `<option value="${field.id}" data-type="${field.type}">${field.label} (${field.type})</option>`;
             });
@@ -1984,11 +1987,13 @@ function updateRuleOperators(ruleId) {
         { value: 'not_empty', label: 'não está vazio' }
     ];
 
-    // Adicionar operadores numéricos para campos de número
-    if (['number', 'slider', 'rating', 'money'].includes(fieldType)) {
+    // Adicionar operadores numéricos para campos de número e pontuação
+    if (['number', 'slider', 'rating', 'money', 'score'].includes(fieldType)) {
         operators.push(
             { value: 'greater_than', label: 'maior que' },
-            { value: 'less_than', label: 'menor que' }
+            { value: 'less_than', label: 'menor que' },
+            { value: 'greater_or_equal', label: 'maior ou igual a' },
+            { value: 'less_or_equal', label: 'menor ou igual a' }
         );
     }
 

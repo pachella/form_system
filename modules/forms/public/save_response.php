@@ -148,13 +148,19 @@ try {
             }
         }
 
-        // Verificar se é array (múltiplas respostas)
+        // Verificar se é array (múltiplas respostas ou campos compostos como RG)
         $isArray = isset($_POST[$fieldName]) && is_array($_POST[$fieldName]);
 
         if ($isArray) {
-            // Múltiplas respostas (checkbox)
-            $answer = array_filter(array_map('trim', $_POST[$fieldName]));
-            $answer = !empty($answer) ? implode(', ', $answer) : '';
+            // Verificar se é campo RG com subcampos (tem chave 'rg_number')
+            if ($field['type'] === 'rg' && isset($_POST[$fieldName]['rg_number'])) {
+                // Salvar como JSON completo para preservar todos os dados
+                $answer = json_encode($_POST[$fieldName], JSON_UNESCAPED_UNICODE);
+            } else {
+                // Múltiplas respostas (checkbox) - juntar com vírgula
+                $answer = array_filter(array_map('trim', $_POST[$fieldName]));
+                $answer = !empty($answer) ? implode(', ', $answer) : '';
+            }
         } else {
             // Resposta única
             $answer = trim($_POST[$fieldName] ?? '');
@@ -229,12 +235,18 @@ try {
                     // Decodificar opções
                     $options = json_decode($field['options'] ?? '[]', true);
 
-                    // Procurar a opção selecionada e pegar o score
-                    foreach ($options as $option) {
-                        if (is_array($option) && isset($option['label']) && $option['label'] === $answer) {
-                            $score = isset($option['score']) ? (int)$option['score'] : 0;
-                            $totalScore += $score; // Somar à pontuação total
-                            break;
+                    // Separar múltiplas respostas (caso seja checkbox)
+                    $selectedAnswers = array_map('trim', explode(',', $answer));
+
+                    // Procurar cada opção selecionada e somar os scores
+                    foreach ($selectedAnswers as $selectedAnswer) {
+                        foreach ($options as $option) {
+                            if (is_array($option) && isset($option['label']) && $option['label'] === $selectedAnswer) {
+                                $optionScore = isset($option['score']) ? (int)$option['score'] : 0;
+                                $score = ($score ?? 0) + $optionScore;
+                                $totalScore += $optionScore;
+                                break;
+                            }
                         }
                     }
                 }
