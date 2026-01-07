@@ -114,9 +114,16 @@ if ($permissionManager->isAdmin()) {
       
       <?php foreach ($moduleStructure as $config): ?>
         <li>
-          <a href="<?= $config['url'] ?>" 
-             class="flex items-center px-3 py-2 rounded-lg transition-colors <?= isActive($config['name'], $currentPage) ?>">
-            <i data-feather="<?= $config['icon'] ?>" class="w-5 h-5 mr-2"></i> <?= $config['label'] ?>
+          <a href="<?= $config['url'] ?>"
+             class="flex items-center justify-between px-3 py-2 rounded-lg transition-colors <?= isActive($config['name'], $currentPage) ?>">
+            <span class="flex items-center">
+              <i data-feather="<?= $config['icon'] ?>" class="w-5 h-5 mr-2"></i> <?= $config['label'] ?>
+            </span>
+            <?php if (isset($config['badge'])): ?>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                <?= $config['badge'] ?>
+              </span>
+            <?php endif; ?>
           </a>
         </li>
       <?php endforeach; ?>

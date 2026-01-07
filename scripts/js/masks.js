@@ -98,7 +98,17 @@ const InputMasks = {
                 autoPlaceholder: "aggressive",
                 formatOnDisplay: true,
                 nationalMode: false,
+                autoFormat: true,
                 utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js"
+            });
+
+            // Aplicar formatação em tempo real
+            input.addEventListener('input', function() {
+                // A biblioteca já formata automaticamente quando utils.js está carregado
+                // Apenas garantir que está formatando
+                if (iti.isValidNumber && iti.isValidNumber()) {
+                    const formattedNumber = iti.getNumber();
+                }
             });
 
             // Salvar número completo com código do país no envio

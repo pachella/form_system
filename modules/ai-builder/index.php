@@ -15,6 +15,11 @@ if (!PlanService::hasProAccess()) {
     $pageTitle = "Criar com IA";
     require_once __DIR__ . '/../../views/layout/header.php';
     require_once __DIR__ . '/../../views/layout/sidebar.php';
+
+    // Obter dados do usuário para pré-preencher o checkout
+    $userName = $_SESSION['user_name'] ?? '';
+    $userEmail = $_SESSION['user_email'] ?? '';
+    $checkoutUrl = "https://checkout.ticto.app/OEDEF53ED?name=" . urlencode($userName) . "&email=" . urlencode($userEmail);
     ?>
 
     <div class="max-w-5xl mx-auto">
@@ -47,7 +52,7 @@ if (!PlanService::hasProAccess()) {
                 </ul>
             </div>
 
-            <a href="/modules/users/settings.php" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-600 font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl text-lg">
+            <a href="<?= htmlspecialchars($checkoutUrl) ?>" target="_blank" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-600 font-bold rounded-xl hover:bg-gray-100 transition-all transform hover:scale-105 shadow-xl text-lg">
                 <i data-feather="star" class="w-5 h-5"></i>
                 Fazer Upgrade para PRO
             </a>

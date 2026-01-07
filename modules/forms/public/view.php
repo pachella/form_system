@@ -535,30 +535,40 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
             display: flex;
             align-items: center;
             height: 100%;
+            background-color: transparent !important;
         }
 
         .iti__arrow {
             margin-left: 6px;
             border-left: 4px solid transparent;
             border-right: 4px solid transparent;
-            border-top: 5px solid #555;
+            border-top: 5px solid var(--text-color);
         }
 
         .iti input.iti__tel-input {
             padding-right: 80px !important;
             width: 100%;
+            background-color: transparent !important;
         }
 
+        /* Dropdown de países - usa cores dinâmicas do formulário */
         .iti__country-list {
+            background-color: <?= $customization['background_color'] ?> !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: 1px solid #ddd;
+            border: 1px solid rgba(0,0,0,0.1);
             border-radius: 8px;
             max-height: 200px;
             overflow-y: auto;
+            z-index: 9999;
+        }
+
+        .iti__country {
+            color: var(--text-color) !important;
+            padding: 8px 12px;
         }
 
         .iti__country:hover {
-            background-color: #f0f0f0;
+            background-color: rgba(0,0,0,0.05) !important;
         }
 
         .iti__country.iti__highlight {
@@ -566,10 +576,28 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
             color: white !important;
         }
 
+        .iti__country-name,
+        .iti__dial-code {
+            color: var(--text-color) !important;
+        }
+
+        .iti__country.iti__highlight .iti__country-name,
+        .iti__country.iti__highlight .iti__dial-code {
+            color: white !important;
+        }
+
         .iti__selected-dial-code {
-            color: #666;
+            color: var(--text-color);
             margin-left: 6px;
             font-weight: 500;
+        }
+
+        /* Remover background branco no focus dos inputs */
+        input:focus,
+        textarea:focus,
+        select:focus {
+            background-color: transparent !important;
+            outline: none;
         }
     </style>
 </head>
