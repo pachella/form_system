@@ -193,7 +193,7 @@ function callGroqAPI($messages) {
             'Authorization: Bearer ' . $apiKey
         ],
         CURLOPT_POSTFIELDS => json_encode([
-            'model' => 'llama-3.1-70b-versatile',  // Modelo mais inteligente (GRATUITO!)
+            'model' => 'llama-3.3-70b-versatile',  // Modelo mais inteligente (GRATUITO!)
             'messages' => $messages,
             'temperature' => 0.7,
             'max_tokens' => 2000

@@ -43,10 +43,10 @@ $apiKey = 'gsk_xxxxxxxxxxxxx';  // ← Cole sua key aqui
 
 ### 3. Modelos Disponíveis
 
-No arquivo `chat.php`, você pode alterar o modelo (linha 190):
+No arquivo `chat.php`, você pode alterar o modelo (linha 196):
 
 ```php
-'model' => 'llama-3.1-70b-versatile',  // Recomendado! (Gratuito)
+'model' => 'llama-3.3-70b-versatile',  // Recomendado! (Gratuito)
 // ou
 'model' => 'llama-3.1-8b-instant',     // Mais rápido (Gratuito)
 // ou
@@ -136,6 +136,19 @@ A IA pode criar formulários com todos os tipos:
 - Peça sugestões: "Me dê sugestões de campos"
 
 ## 📝 Changelog
+
+### v11.0.4 (2025-01-07)
+- 🔄 Atualização para Llama 3.3 70B (modelo mais recente)
+- ⚡ Melhor performance e precisão
+
+### v11.0.3 (2025-01-07)
+- 🎨 Chat integrado ao tema padrão do sistema
+- 🎨 Cores adaptadas para verde da marca (#4EA44B)
+- 📁 Configuração via arquivo local (config.local.php)
+
+### v11.0.2 (2025-01-07)
+- ⚙️ Sistema de variáveis de ambiente
+- 📦 Cache busting para CSS/JS
 
 ### v11.0.1 (2025-01-07)
 - 🔄 Migrado para Groq API (gratuito e mais rápido!)
