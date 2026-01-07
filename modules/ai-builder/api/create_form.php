@@ -23,7 +23,13 @@ if (!$input || !isset($input['title']) || !isset($input['fields'])) {
 
 $title = trim($input['title']);
 $description = trim($input['description'] ?? '');
+$status = trim($input['status'] ?? 'rascunho'); // Padrão: rascunho
 $fields = $input['fields'] ?? [];
+
+// Validar status
+if (!in_array($status, ['rascunho', 'publicado'])) {
+    $status = 'rascunho'; // Fallback seguro
+}
 
 // Validações
 if (empty($title)) {
@@ -42,13 +48,14 @@ try {
     // 1. CRIAR FORMULÁRIO
     $formStmt = $pdo->prepare("
         INSERT INTO forms (user_id, title, description, status, created_at)
-        VALUES (:user_id, :title, :description, 'publicado', NOW())
+        VALUES (:user_id, :title, :description, :status, NOW())
     ");
 
     $formStmt->execute([
         ':user_id' => $userId,
         ':title' => $title,
-        ':description' => $description
+        ':description' => $description,
+        ':status' => $status
     ]);
 
     $formId = $pdo->lastInsertId();

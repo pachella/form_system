@@ -35,13 +35,13 @@ require_once(__DIR__ . "/../../core/PlanService.php");
   <!-- JS do SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- CSS Global Supersites -->
-  <link rel="stylesheet" href="/scripts/css/global.css?v=11.0.4">
+  <link rel="stylesheet" href="/scripts/css/global.css?v=11.0.5">
 
   <!-- Scripts globais (ORDEM CORRETA) -->
-  <script src="/scripts/js/global/theme.js?v=11.0.4"></script>
-  <script src="/scripts/js/global/ui.js?v=11.0.4"></script>
-  <script src="/scripts/js/global/modals.js?v=11.0.4"></script>
-  <script src="/scripts/js/global/helpers.js?v=11.0.4"></script>
+  <script src="/scripts/js/global/theme.js?v=11.0.5"></script>
+  <script src="/scripts/js/global/ui.js?v=11.0.5"></script>
+  <script src="/scripts/js/global/modals.js?v=11.0.5"></script>
+  <script src="/scripts/js/global/helpers.js?v=11.0.5"></script>
 
   <!-- Variáveis globais do usuário -->
   <script>
@@ -50,10 +50,10 @@ require_once(__DIR__ . "/../../core/PlanService.php");
   </script>
 
   <!-- Script de recursos PRO (ANTES dos específicos) -->
-  <script src="/assets/js/pro-features.js?v=11.0.4"></script>
+  <script src="/assets/js/pro-features.js?v=11.0.5"></script>
 
   <!-- Script de formulários (DEPOIS dos globais) -->
-  <script src="/modules/forms/assets/admin.js?v=11.0.4"></script>
+  <script src="/modules/forms/assets/admin.js?v=11.0.5"></script>
   
   <style>
     /* Remover TODAS as transições do tema dark (instantâneo) */

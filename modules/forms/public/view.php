@@ -415,7 +415,12 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/imask"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-    <script src="/scripts/js/masks.js?v=11.0.4"></script>
+
+    <!-- International Telephone Input (bandeirinhas de países) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/css/intlTelInput.css">
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/intlTelInput.min.js"></script>
+
+    <script src="/scripts/js/masks.js?v=11.0.5"></script>
 
     <!-- Fonte personalizada -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -423,7 +428,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link href="https://fonts.googleapis.com/css2?family=<?= $fontFamilyUrl ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=11.0.4">
+    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=11.0.5">
 
     <style>
         :root {
@@ -509,6 +514,62 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
 
         .float-content-container.small {
             width: calc(70vw - 2rem);
+        }
+
+        /* Estilos para intl-tel-input (seletor de país) */
+        .iti {
+            width: 100% !important;
+            display: block !important;
+        }
+
+        .iti__flag-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            padding: 0;
+        }
+
+        .iti__selected-flag {
+            padding: 0 8px 0 16px;
+            display: flex;
+            align-items: center;
+            height: 100%;
+        }
+
+        .iti__arrow {
+            margin-left: 6px;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #555;
+        }
+
+        .iti input.iti__tel-input {
+            padding-right: 80px !important;
+            width: 100%;
+        }
+
+        .iti__country-list {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .iti__country:hover {
+            background-color: #f0f0f0;
+        }
+
+        .iti__country.iti__highlight {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .iti__selected-dial-code {
+            color: #666;
+            margin-left: 6px;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -799,7 +860,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <?php endif; ?>
 
     <!-- Scripts -->
-    <script src="/modules/forms/public/assets/scripts.js?v=11.0.4"></script>
+    <script src="/modules/forms/public/assets/scripts.js?v=11.0.5"></script>
 
 </body>
 </html>

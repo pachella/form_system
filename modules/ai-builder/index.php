@@ -84,7 +84,7 @@ require_once __DIR__ . '/../../views/layout/sidebar.php';
     </div>
 </div>
 
-<script src="/modules/ai-builder/assets/chat.js?v=11.0.4"></script>
+<script src="/modules/ai-builder/assets/chat.js?v=11.0.5"></script>
 
 <?php
 require_once __DIR__ . '/../../views/layout/footer.php';

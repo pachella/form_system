@@ -82,39 +82,63 @@ const InputMasks = {
     },
 
     /**
-     * Máscara para telefone/celular
+     * Máscara para telefone/celular com seletor de país
      * @param {HTMLElement} input - Elemento input
-     * @returns {IMask} Instância do IMask
+     * @returns {object} Instância do intlTelInput ou IMask
      */
     phone: function(input) {
         if (!input) return null;
 
-        // Fallback para vanilla JS se IMask não disponível
-        if (typeof IMask === 'undefined') {
-            input.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-
-                if (value.length <= 10) {
-                    // Telefone fixo: (00) 0000-0000
-                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
-                    value = value.replace(/(\d{4})(\d)/, '$1-$2');
-                } else {
-                    // Celular: (00) 00000-0000
-                    value = value.replace(/(\d{2})(\d)/, '($1) $2');
-                    value = value.replace(/(\d{5})(\d)/, '$1-$2');
-                }
-
-                e.target.value = value;
+        // Usar intl-tel-input se disponível (com bandeirinhas de países)
+        if (typeof window.intlTelInput !== 'undefined') {
+            const iti = window.intlTelInput(input, {
+                initialCountry: "br",
+                preferredCountries: ["br", "us", "pt", "es", "ar"],
+                separateDialCode: true,
+                autoPlaceholder: "aggressive",
+                formatOnDisplay: true,
+                nationalMode: false,
+                utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js"
             });
-            return null;
+
+            // Salvar número completo com código do país no envio
+            input.addEventListener('blur', function() {
+                if (input.value.trim()) {
+                    const fullNumber = iti.getNumber();
+                    input.setAttribute('data-full-number', fullNumber);
+                }
+            });
+
+            return iti;
         }
 
-        return IMask(input, {
-            mask: [
-                {mask: '(00) 0000-0000'},
-                {mask: '(00) 00000-0000'}
-            ]
+        // Fallback 1: IMask se disponível
+        if (typeof IMask !== 'undefined') {
+            return IMask(input, {
+                mask: [
+                    {mask: '(00) 0000-0000'},
+                    {mask: '(00) 00000-0000'}
+                ]
+            });
+        }
+
+        // Fallback 2: Vanilla JS
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+
+            if (value.length <= 10) {
+                // Telefone fixo: (00) 0000-0000
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            } else {
+                // Celular: (00) 00000-0000
+                value = value.replace(/(\d{2})(\d)/, '($1) $2');
+                value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            }
+
+            e.target.value = value;
         });
+        return null;
     },
 
     /**
