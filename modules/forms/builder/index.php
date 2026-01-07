@@ -281,7 +281,7 @@ require_once __DIR__ . '/builder_sidebar.php';
             <div class="bg-white dark:bg-zinc-800 rounded-lg shadow p-6 sticky top-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-zinc-100 mb-4" id="formTitle">Adicionar Pergunta</h2>
 
-                <form id="fieldForm" class="space-y-4">
+                <form id="fieldForm" accept-charset="UTF-8" class="space-y-4">
                     <input type="hidden" name="form_id" value="<?= $formId ?>">
                     <input type="hidden" name="field_id" id="fieldId" value="">
                     <input type="hidden" name="media" id="fieldMedia" value="">

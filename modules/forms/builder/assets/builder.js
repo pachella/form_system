@@ -1304,41 +1304,49 @@ function openMediaModal() {
                 </div>
 
                 <div class="space-y-4">
+                    <!-- Seletor de tipo de mídia -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
-                            <i class="fas fa-image mr-1"></i> Upload de imagem
+                            Tipo de mídia
                         </label>
-                        <input type="file" id="imageUpload" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
+                        <select id="mediaType" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
+                            <option value="image">📷 Imagem</option>
+                            <option value="video">🎥 Vídeo</option>
+                        </select>
                     </div>
 
-                    <div id="imagePreview" class="hidden mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia da imagem</label>
-                        <img id="previewImage" src="" alt="Prévia" class="max-w-full max-h-48 object-contain rounded-lg border border-gray-300 dark:border-zinc-600 mx-auto">
-                    </div>
-
-                    <div class="relative">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-300 dark:border-zinc-600"></div>
+                    <!-- Container para imagem -->
+                    <div id="imageContainer" class="space-y-4">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                                <i class="fas fa-image mr-1"></i> Upload de imagem
+                            </label>
+                            <input type="file" id="imageUpload" accept="image/*" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
                         </div>
-                        <div class="relative flex justify-center text-xs">
-                            <span class="px-2 bg-white dark:bg-zinc-800 text-gray-500 dark:text-zinc-400">OU</span>
+
+                        <div id="imagePreview" class="hidden mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia da imagem</label>
+                            <img id="previewImage" src="" alt="Prévia" class="max-w-full max-h-48 object-contain rounded-lg border border-gray-300 dark:border-zinc-600 mx-auto">
                         </div>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
-                            <i class="fas fa-video mr-1"></i> URL do vídeo (YouTube, Vimeo, etc)
-                        </label>
-                        <input type="text" id="videoUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
-                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-                            Cole a URL de um vídeo do YouTube, Vimeo ou outro serviço
-                        </p>
-                    </div>
+                    <!-- Container para vídeo -->
+                    <div id="videoContainer" class="space-y-4 hidden">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                                <i class="fas fa-video mr-1"></i> URL do vídeo (YouTube, Vimeo, etc)
+                            </label>
+                            <input type="text" id="videoUrl" placeholder="https://youtube.com/watch?v=..." class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
+                            <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                                Cole a URL de um vídeo do YouTube, Vimeo ou outro serviço
+                            </p>
+                        </div>
 
-                    <div id="videoPreview" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia do vídeo</label>
-                        <div id="videoPreviewContent" class="bg-gray-100 dark:bg-zinc-700 rounded-lg border border-gray-300 dark:border-zinc-600 aspect-video flex items-center justify-center">
-                            <p class="text-gray-500 dark:text-zinc-400">Prévia do vídeo</p>
+                        <div id="videoPreview" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Prévia do vídeo</label>
+                            <div id="videoPreviewContent" class="bg-gray-100 dark:bg-zinc-700 rounded-lg border border-gray-300 dark:border-zinc-600 aspect-video flex items-center justify-center">
+                                <p class="text-gray-500 dark:text-zinc-400">Prévia do vídeo</p>
+                            </div>
                         </div>
                     </div>
 
@@ -1364,6 +1372,24 @@ function openMediaModal() {
         document.getElementById('clearMediaBtn').classList.remove('hidden');
     }
 
+    // Função para alternar entre imagem e vídeo
+    function toggleMediaType() {
+        const mediaType = document.getElementById('mediaType').value;
+        const imageContainer = document.getElementById('imageContainer');
+        const videoContainer = document.getElementById('videoContainer');
+
+        if (mediaType === 'image') {
+            imageContainer.classList.remove('hidden');
+            videoContainer.classList.add('hidden');
+        } else {
+            imageContainer.classList.add('hidden');
+            videoContainer.classList.remove('hidden');
+        }
+    }
+
+    // Event listener para o seletor de tipo
+    document.getElementById('mediaType').addEventListener('change', toggleMediaType);
+
     document.getElementById('imageUpload').addEventListener('change', function(e) {
         if (this.files && this.files[0]) {
             const reader = new FileReader();
@@ -1372,9 +1398,6 @@ function openMediaModal() {
                 const preview = document.getElementById('previewImage');
                 preview.src = e.target.result;
                 document.getElementById('imagePreview').classList.remove('hidden');
-                // Limpar o campo de vídeo se houver
-                document.getElementById('videoUrl').value = '';
-                document.getElementById('videoPreview').classList.add('hidden');
             }
 
             reader.readAsDataURL(this.files[0]);
@@ -1385,9 +1408,6 @@ function openMediaModal() {
         const url = this.value.trim();
         if (url) {
             showVideoPreview(url);
-            // Limpar o upload de imagem se houver
-            document.getElementById('imageUpload').value = '';
-            document.getElementById('imagePreview').classList.add('hidden');
         } else {
             document.getElementById('videoPreview').classList.add('hidden');
         }
@@ -1396,14 +1416,17 @@ function openMediaModal() {
     // Preencher dados existentes
     if (currentMedia && Object.keys(currentMedia).length > 0) {
         if (currentMedia.type === 'image') {
+            document.getElementById('mediaType').value = 'image';
             document.getElementById('previewImage').src = currentMedia.url;
             document.getElementById('imagePreview').classList.remove('hidden');
         } else if (currentMedia.type === 'video') {
+            document.getElementById('mediaType').value = 'video';
             document.getElementById('videoUrl').value = currentMedia.url || '';
             if (currentMedia.url) {
                 showVideoPreview(currentMedia.url);
             }
         }
+        toggleMediaType();
     }
 }
 
