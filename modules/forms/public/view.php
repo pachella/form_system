@@ -415,7 +415,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/imask"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-    <script src="/scripts/js/masks.js?v=10.4.0"></script>
+    <script src="/scripts/js/masks.js?v=11.0.2"></script>
 
     <!-- Fonte personalizada -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -423,7 +423,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link href="https://fonts.googleapis.com/css2?family=<?= $fontFamilyUrl ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=10.4.0">
+    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=11.0.2">
 
     <style>
         :root {
@@ -799,7 +799,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <?php endif; ?>
 
     <!-- Scripts -->
-    <script src="/modules/forms/public/assets/scripts.js?v=10.4.0"></script>
+    <script src="/modules/forms/public/assets/scripts.js?v=11.0.2"></script>
 
 </body>
 </html>

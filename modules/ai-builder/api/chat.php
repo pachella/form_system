@@ -174,8 +174,14 @@ try {
  * 5. Cole a key abaixo onde diz 'SUA_API_KEY_AQUI'
  */
 function callGroqAPI($messages) {
-    // ⚠️ COLE SUA API KEY DO GROQ AQUI ⚠️
-    $apiKey = getenv('GROQ_API_KEY') ?: 'SUA_API_KEY_AQUI';
+    // ⚠️ CONFIGURAR API KEY COMO VARIÁVEL DE AMBIENTE ⚠️
+    // No servidor, execute: export GROQ_API_KEY="sua_key_aqui"
+    // Ou configure no .env ou painel de hospedagem
+    $apiKey = getenv('GROQ_API_KEY') ?: '';
+
+    if (empty($apiKey)) {
+        throw new Exception('API key do Groq não configurada. Configure a variável de ambiente GROQ_API_KEY');
+    }
 
     $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
 
