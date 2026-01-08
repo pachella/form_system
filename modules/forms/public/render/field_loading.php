@@ -17,7 +17,8 @@ $loadingId = 'loading-' . $field['id'];
 /* Esconder elementos do loading */
 #<?= $loadingId ?>-container .question-number,
 #<?= $loadingId ?>-container .btn-primary,
-#<?= $loadingId ?>-container button {
+#<?= $loadingId ?>-container button,
+#<?= $loadingId ?>-container .flex.items-center.gap-4.mt-12 {
     display: none !important;
 }
 </style>
@@ -74,6 +75,15 @@ $loadingId = 'loading-' . $field['id'];
 
         const buttons = parentSlide.querySelectorAll('button, .btn-primary');
         buttons.forEach(btn => btn.style.display = 'none');
+
+        // Desabilitar enter no loading
+        parentSlide.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }, true);
     }
 
     // Verificar se o slide está visível antes de iniciar
