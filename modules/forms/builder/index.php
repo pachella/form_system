@@ -421,6 +421,14 @@ let currentRedirectType = <?= json_encode($successRedirectType) ?>;
 let currentRedirectButtonText = <?= json_encode($successBtRedirect) ?>;
 let currentHideBranding = <?= $hideBranding ?>;
 let currentShowScore = <?= $showScore ?>;
+let currentOfferModeEnabled = <?= isset($customization['offer_mode_enabled']) ? $customization['offer_mode_enabled'] : 0 ?>;
+let currentOfferLoadingText1 = <?= json_encode($customization['offer_loading_text_1'] ?? 'Analisando seu perfil...') ?>;
+let currentOfferLoadingText2 = <?= json_encode($customization['offer_loading_text_2'] ?? 'Procurando a melhor oferta...') ?>;
+let currentOfferTitle = <?= json_encode($customization['offer_title'] ?? '') ?>;
+let currentOfferDescription = <?= json_encode($customization['offer_description'] ?? '') ?>;
+let currentOfferAnchorPrice = <?= isset($customization['offer_anchor_price']) ? $customization['offer_anchor_price'] : '""' ?>;
+let currentOfferPromoPrice = <?= isset($customization['offer_promo_price']) ? $customization['offer_promo_price'] : '""' ?>;
+let currentOfferScarcityText = <?= json_encode($customization['offer_scarcity_text'] ?? '') ?>;
 </script>
 <script src="/modules/forms/builder/assets/builder.js?v=11.0.5"></script>
 
