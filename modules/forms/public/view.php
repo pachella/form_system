@@ -11,6 +11,7 @@ header("Pragma: no-cache");
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Data no passado
 
 require_once(__DIR__ . "/../../../core/db.php");
+require_once(__DIR__ . "/../../../core/cache_helper.php");
 require_once(__DIR__ . "/../helpers/field_placeholders.php");
 
 // Função helper para renderizar mídia
@@ -420,7 +421,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/css/intlTelInput.css">
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/intlTelInput.min.js"></script>
 
-    <script src="/scripts/js/masks.js?v=11.0.10"></script>
+    <script src="<?= assetUrl('/scripts/js/masks.js') ?>"></script>
 
     <!-- Fonte personalizada -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -428,7 +429,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link href="https://fonts.googleapis.com/css2?family=<?= $fontFamilyUrl ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=11.0.10">
+    <link rel="stylesheet" href="<?= assetUrl('/modules/forms/public/assets/styles.css') ?>">
 
     <style>
         :root {
@@ -890,7 +891,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <?php endif; ?>
 
     <!-- Scripts -->
-    <script src="/modules/forms/public/assets/scripts.js?v=11.0.10"></script>
+    <script src="<?= assetUrl('/modules/forms/public/assets/scripts.js') ?>"></script>
 
 </body>
 </html>

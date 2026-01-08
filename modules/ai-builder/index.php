@@ -3,6 +3,7 @@ session_start();
 require_once __DIR__ . '/../../core/db.php';
 require_once __DIR__ . '/../../core/PermissionManager.php';
 require_once __DIR__ . '/../../core/PlanService.php';
+require_once __DIR__ . '/../../core/cache_helper.php';
 
 // Verificar se o usuário está logado
 if (!isset($_SESSION['user_id'])) {
@@ -143,7 +144,7 @@ require_once __DIR__ . '/../../views/layout/sidebar.php';
     </div>
 </div>
 
-<script src="/modules/ai-builder/assets/chat.js?v=11.0.10"></script>
+<script src="<?= assetUrl('/modules/ai-builder/assets/chat.js') ?>"></script>
 
 <?php
 require_once __DIR__ . '/../../views/layout/footer.php';

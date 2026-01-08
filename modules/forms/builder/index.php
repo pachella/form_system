@@ -4,6 +4,7 @@ require_once(__DIR__ . "/../../../core/db.php");
 require_once(__DIR__ . "/../../../core/config.php");
 require_once __DIR__ . '/../../../core/PermissionManager.php';
 require_once __DIR__ . '/../../../core/PlanService.php';
+require_once __DIR__ . '/../../../core/cache_helper.php';
 
 if (!isset($_SESSION["user_id"])) {
     header("Location: /auth/login");
@@ -79,7 +80,7 @@ require_once __DIR__ . '/builder_sidebar.php';
 <!-- SortableJS para drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=11.0.10">
+<link rel="stylesheet" href="<?= assetUrl('/modules/forms/builder/assets/builder.css') ?>">
 
 <div class="max-w-6xl mx-auto">
     <!-- Header -->
@@ -425,7 +426,7 @@ let currentShowScore = <?= $showScore ?>;
 let currentOfferModeEnabled = <?= isset($customization['offer_mode_enabled']) ? $customization['offer_mode_enabled'] : 0 ?>;
 let currentSuccessMessageMedia = <?= json_encode($customization['success_message_media'] ?? '') ?>;
 </script>
-<script src="/modules/forms/builder/assets/builder.js?v=11.0.10"></script>
+<script src="<?= assetUrl('/modules/forms/builder/assets/builder.js') ?>"></script>
 
 <?php
 require_once __DIR__ . '/../../../views/layout/footer.php';
