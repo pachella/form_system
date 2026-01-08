@@ -32,17 +32,24 @@ function replaceVariables(text) {
 }
 
 function applyVariablesToSlide(slide) {
-    if (!userFirstName) return;
+    if (!userFirstName) {
+        console.log('⚠️ userFirstName vazio, não substituindo');
+        return;
+    }
 
-    // Substituir no label (h2, h3)
-    const labels = slide.querySelectorAll('h2, h3');
+    console.log('🔄 Aplicando variáveis ao slide, nome:', userFirstName);
+
+    // Substituir no label (h2, h3, label)
+    const labels = slide.querySelectorAll('h2, h3, label');
     labels.forEach(label => {
         const originalText = label.getAttribute('data-original-text') || label.textContent;
         if (!label.getAttribute('data-original-text')) {
             label.setAttribute('data-original-text', originalText);
         }
         if (originalText.includes('[nome]')) {
-            label.textContent = replaceVariables(originalText);
+            const newText = replaceVariables(originalText);
+            label.textContent = newText;
+            console.log('✅ Label substituído:', originalText, '→', newText);
         }
     });
 
@@ -54,7 +61,9 @@ function applyVariablesToSlide(slide) {
             desc.setAttribute('data-original-text', originalText);
         }
         if (originalText.includes('[nome]')) {
-            desc.textContent = replaceVariables(originalText);
+            const newText = replaceVariables(originalText);
+            desc.textContent = newText;
+            console.log('✅ Descrição substituída:', originalText, '→', newText);
         }
     });
 }
@@ -595,6 +604,7 @@ function nextQuestion() {
     if (nameInput && nameInput.value) {
         userFirstName = extractFirstName(nameInput.value);
         console.log('📝 Nome capturado:', userFirstName);
+        console.log('📝 Valor completo:', nameInput.value);
     }
 
     // Remover erros anteriores
