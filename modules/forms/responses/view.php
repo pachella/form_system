@@ -3,6 +3,7 @@ session_start();
 require_once(__DIR__ . "/../../../core/db.php");
 require_once(__DIR__ . "/../../../core/config.php");
 require_once __DIR__ . '/../../../core/PermissionManager.php';
+require_once(__DIR__ . "/../../../core/cache_helper.php");
 
 if (!isset($_SESSION["user_id"])) {
     header("Location: /auth/login");
@@ -346,10 +347,10 @@ const USER_EMAIL = "<?= htmlspecialchars($_SESSION['user_email'] ?? '', ENT_QUOT
 window.userRole = "<?= htmlspecialchars($_SESSION['user_role'] ?? '', ENT_QUOTES) ?>";
 window.userPlan = "<?= PlanService::getCurrentPlan() ?>";
 </script>
-<script src="../../../scripts/js/global/theme.js"></script>
-<script src="../../../scripts/js/global/ui.js"></script>
-<script src="../../../scripts/js/global/modals.js"></script>
-<script src="../../../scripts/js/global/helpers.js"></script>
+<script src="<?= assetUrl('/scripts/js/global/theme.js') ?>"></script>
+<script src="<?= assetUrl('/scripts/js/global/ui.js') ?>"></script>
+<script src="<?= assetUrl('/scripts/js/global/modals.js') ?>"></script>
+<script src="<?= assetUrl('/scripts/js/global/helpers.js') ?>"></script>
 
 <script>
 async function deleteResponse(responseId, formId) {

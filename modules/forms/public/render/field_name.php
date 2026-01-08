@@ -1,6 +1,7 @@
 <input type="text"
        name="<?= $fieldName ?>"
        id="<?= $fieldName ?>"
+       data-field-type="name"
        placeholder="<?= htmlspecialchars(getFieldPlaceholder('name')) ?>"
        <?= $field['required'] ? 'required' : '' ?>
        autocomplete="name"

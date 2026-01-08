@@ -13,6 +13,52 @@ const flows = flowsData ? JSON.parse(flowsData) : [];
 // Rastrear qual fluxo está ativo atualmente
 let activeFlowId = null;
 
+// Variáveis dinâmicas do formulário
+let userFirstName = '';
+
+// ============================================
+// SISTEMA DE VARIÁVEIS DINÂMICAS
+// ============================================
+function extractFirstName(fullName) {
+    if (!fullName) return '';
+    const trimmed = fullName.trim();
+    const firstName = trimmed.split(' ')[0];
+    return firstName;
+}
+
+function replaceVariables(text) {
+    if (!text) return text;
+    return text.replace(/\[nome\]/gi, userFirstName || '[nome]');
+}
+
+function applyVariablesToSlide(slide) {
+    if (!userFirstName) return;
+
+    // Substituir no label (h2, h3)
+    const labels = slide.querySelectorAll('h2, h3');
+    labels.forEach(label => {
+        const originalText = label.getAttribute('data-original-text') || label.textContent;
+        if (!label.getAttribute('data-original-text')) {
+            label.setAttribute('data-original-text', originalText);
+        }
+        if (originalText.includes('[nome]')) {
+            label.textContent = replaceVariables(originalText);
+        }
+    });
+
+    // Substituir nas descriptions (p)
+    const descriptions = slide.querySelectorAll('p');
+    descriptions.forEach(desc => {
+        const originalText = desc.getAttribute('data-original-text') || desc.textContent;
+        if (!desc.getAttribute('data-original-text')) {
+            desc.setAttribute('data-original-text', originalText);
+        }
+        if (originalText.includes('[nome]')) {
+            desc.textContent = replaceVariables(originalText);
+        }
+    });
+}
+
 // ============================================
 // FUNÇÃO HELPER PARA RENDERIZAR MÍDIA
 // ============================================
@@ -544,6 +590,13 @@ function updateVirtualNumber() {
 function nextQuestion() {
     const currentQuestion = slides[currentSlide];
 
+    // Capturar o primeiro nome se o campo atual for do tipo "name"
+    const nameInput = currentQuestion.querySelector('input[data-field-type="name"]');
+    if (nameInput && nameInput.value) {
+        userFirstName = extractFirstName(nameInput.value);
+        console.log('📝 Nome capturado:', userFirstName);
+    }
+
     // Remover erros anteriores
     currentQuestion.querySelectorAll('.error-message').forEach(el => el.remove());
     currentQuestion.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
@@ -743,6 +796,9 @@ function nextQuestion() {
     slides[currentSlide].classList.remove('fade-in');
     void slides[currentSlide].offsetWidth;
     slides[currentSlide].classList.add('fade-in');
+
+    // Substituir variáveis [nome] no label e description do próximo campo
+    applyVariablesToSlide(slides[currentSlide]);
 
     const firstInput = slides[currentSlide].querySelector('input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), textarea, select');
     if (firstInput) {
@@ -1293,4 +1349,53 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('beforeunload', function() {
         savePartialResponse();
     });
+
+    // ============================================
+    // LISTENER PARA VARIÁVEIS DINÂMICAS
+    // ============================================
+    // Capturar nome e substituir variáveis em tempo real (modo all-at-once)
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input[data-field-type="name"]')) {
+            const fullName = e.target.value;
+            userFirstName = extractFirstName(fullName);
+
+            // Aplicar substituição em todos os campos do formulário
+            const formAllAtOnce = document.getElementById('formAllAtOnce');
+            if (formAllAtOnce) {
+                const allFields = formAllAtOnce.querySelectorAll('.field-container');
+                allFields.forEach(field => {
+                    applyVariablesToField(field);
+                });
+            }
+        }
+    });
 });
+
+// Função auxiliar para substituir variáveis em um campo específico
+function applyVariablesToField(field) {
+    if (!userFirstName) return;
+
+    // Substituir no label (h2, h3)
+    const labels = field.querySelectorAll('h2, h3, label');
+    labels.forEach(label => {
+        const originalText = label.getAttribute('data-original-text') || label.textContent;
+        if (!label.getAttribute('data-original-text')) {
+            label.setAttribute('data-original-text', originalText);
+        }
+        if (originalText.includes('[nome]')) {
+            label.textContent = replaceVariables(originalText);
+        }
+    });
+
+    // Substituir nas descriptions (p)
+    const descriptions = field.querySelectorAll('p');
+    descriptions.forEach(desc => {
+        const originalText = desc.getAttribute('data-original-text') || desc.textContent;
+        if (!desc.getAttribute('data-original-text')) {
+            desc.setAttribute('data-original-text', originalText);
+        }
+        if (originalText.includes('[nome]')) {
+            desc.textContent = replaceVariables(originalText);
+        }
+    });
+}
