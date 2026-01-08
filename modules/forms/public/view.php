@@ -666,10 +666,10 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                                 <?= $index + 1 ?> <i class="fas fa-arrow-right text-xs"></i>
                             </div>
 
-                            <?php if ($field['type'] !== 'terms'): ?>
+                            <?php if ($field['type'] !== 'terms' && $field['type'] !== 'loading'): ?>
                                 <label class="block text-3xl md:text-4xl font-bold mb-4 leading-tight" style="color: <?= $customization['text_color'] ?> !important;">
                                     <?= htmlspecialchars($field['label']) ?>
-                                    <?php if ($field['required'] && !in_array($field['type'], ['welcome', 'message', 'loading'])): ?>
+                                    <?php if ($field['required'] && !in_array($field['type'], ['welcome', 'message'])): ?>
                                         <span class="text-red-500">*</span>
                                     <?php endif; ?>
                                 </label>
@@ -694,7 +694,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                                     <div class="float-content-container <?= $sizeClass ?>">
                                         <?php
                                         // Não renderizar arquivo para welcome e message (apenas exibem texto)
-                                        if (!in_array($field['type'], ['welcome', 'message', 'loading'])):
+                                        if (!in_array($field['type'], ['welcome', 'message'])):
                                             $fieldName = "field_" . $field['id'];
                                             $renderFile = $baseDir . "/render/field_{$field['type']}.php";
 
@@ -717,7 +717,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
 
                                 <?php
                                 // Não renderizar arquivo para welcome e message (apenas exibem texto)
-                                if (!in_array($field['type'], ['welcome', 'message', 'loading'])):
+                                if (!in_array($field['type'], ['welcome', 'message'])):
                                     $fieldName = "field_" . $field['id'];
                                     $renderFile = $baseDir . "/render/field_{$field['type']}.php";
 
@@ -810,10 +810,10 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                                  data-conditional-logic="<?= htmlspecialchars($field['conditional_logic'] ?? '') ?>"
                                  style="animation-delay: <?= $index * 0.1 ?>s;">
 
-                                <?php if ($field['type'] !== 'terms'): ?>
+                                <?php if ($field['type'] !== 'terms' && $field['type'] !== 'loading'): ?>
                                     <label class="block text-2xl font-bold mb-2" style="color: <?= $customization['text_color'] ?> !important;">
                                         <?= htmlspecialchars($field['label']) ?>
-                                        <?php if ($field['required'] && !in_array($field['type'], ['welcome', 'message', 'loading'])): ?>
+                                        <?php if ($field['required'] && !in_array($field['type'], ['welcome', 'message'])): ?>
                                             <span class="text-red-500">*</span>
                                         <?php endif; ?>
                                     </label>
@@ -838,7 +838,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
                                         <div class="float-content-container <?= $sizeClass ?>">
                                             <?php
                                             // Não renderizar arquivo para welcome e message (apenas exibem texto)
-                                            if (!in_array($field['type'], ['welcome', 'message', 'loading'])):
+                                            if (!in_array($field['type'], ['welcome', 'message'])):
                                                 $fieldName = "field_" . $field['id'];
                                                 $renderFile = $baseDir . "/render/field_{$field['type']}.php";
 
@@ -861,7 +861,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
 
                                     <?php
                                     // Não renderizar arquivo para welcome e message (apenas exibem texto)
-                                    if (!in_array($field['type'], ['welcome', 'message', 'loading'])):
+                                    if (!in_array($field['type'], ['welcome', 'message'])):
                                         $fieldName = "field_" . $field['id'];
                                         $renderFile = $baseDir . "/render/field_{$field['type']}.php";
 

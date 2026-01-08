@@ -30,76 +30,66 @@ if (!empty($videoUrl)) {
 }
 
 // ID único para o botão deste campo
-$buttonId = 'vsl-button-' . $field['id'];
+$vslId = 'vsl-' . $field['id'];
 ?>
 
-<div class="text-center py-8" data-vsl-wait-time="<?= $waitTime ?>">
-    <h2 class="text-2xl font-bold mb-4"><?= htmlspecialchars($field['label']) ?></h2>
-    <?php if (!empty($field['description'])): ?>
-        <p class="text-lg mb-6"><?= nl2br(htmlspecialchars($field['description'])) ?></p>
-    <?php endif; ?>
-
-    <?php if (!empty($embedUrl)): ?>
-        <div class="media-container mb-6 aspect-video max-w-4xl mx-auto">
-            <iframe class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700"
-                    src="<?= $embedUrl ?>"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen>
-            </iframe>
-        </div>
-    <?php endif; ?>
-
-    <button type="button"
-            id="<?= $buttonId ?>"
-            class="btn-primary px-8 py-3 text-lg <?= $waitTime > 0 ? 'opacity-50 cursor-not-allowed' : '' ?>"
-            <?= $waitTime > 0 ? 'disabled' : '' ?>
-            onclick="<?php if ($displayMode === 'one-by-one'): ?>nextQuestion()<?php else: ?>
-                const slide = this.closest('.fade-in');
-                if (slide) {
-                    const currentIndex = Array.from(slide.parentElement.children).indexOf(slide);
-                    const nextSlide = slide.parentElement.children[currentIndex + 1];
-                    if (nextSlide) {
-                        nextSlide.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
-            <?php endif; ?>">
-        <span id="<?= $buttonId ?>-text">
-            <?php if ($waitTime > 0): ?>
-                Aguarde <span id="<?= $buttonId ?>-timer"><?= $waitTime ?></span>s
-            <?php else: ?>
-                Continuar <i class="fas fa-arrow-right ml-2"></i>
-            <?php endif; ?>
-        </span>
-    </button>
-</div>
+<?php if (!empty($embedUrl)): ?>
+    <div class="media-container mb-6 aspect-video max-w-4xl mx-auto" data-vsl-id="<?= $vslId ?>">
+        <iframe class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700"
+                src="<?= $embedUrl ?>"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+        </iframe>
+    </div>
+<?php endif; ?>
 
 <?php if ($waitTime > 0): ?>
 <script>
 (function() {
-    const buttonId = '<?= $buttonId ?>';
-    const button = document.getElementById(buttonId);
-    const timerSpan = document.getElementById(buttonId + '-timer');
-    const textSpan = document.getElementById(buttonId + '-text');
+    const vslId = '<?= $vslId ?>';
+    const vslContainer = document.querySelector('[data-vsl-id="' + vslId + '"]');
+    if (!vslContainer) return;
+
+    // Encontrar o slide atual
+    const slide = vslContainer.closest('.question-slide, .field-container');
+    if (!slide) return;
+
+    // Encontrar o botão "OK" deste slide
+    const button = slide.querySelector('button[type="button"]:not([id^="vsl-button-"])');
+    if (!button) return;
+
+    // Desabilitar botão inicialmente
+    button.disabled = true;
+    button.classList.add('opacity-50', 'cursor-not-allowed');
+
+    // Salvar texto original do botão
+    const originalButtonHTML = button.innerHTML;
+
     let timeLeft = <?= $waitTime ?>;
+
+    // Atualizar texto do botão
+    function updateButtonText() {
+        button.innerHTML = 'Aguarde <span class="font-bold">' + timeLeft + 's</span>';
+    }
+
+    updateButtonText();
 
     // Contador regressivo
     const countdown = setInterval(function() {
         timeLeft--;
 
-        if (timerSpan) {
-            timerSpan.textContent = timeLeft;
-        }
-
-        if (timeLeft <= 0) {
+        if (timeLeft > 0) {
+            updateButtonText();
+        } else {
             clearInterval(countdown);
 
             // Habilitar botão
             button.disabled = false;
             button.classList.remove('opacity-50', 'cursor-not-allowed');
 
-            // Mudar texto
-            textSpan.innerHTML = 'Continuar <i class="fas fa-arrow-right ml-2"></i>';
+            // Restaurar texto original
+            button.innerHTML = originalButtonHTML;
         }
     }, 1000);
 })();
