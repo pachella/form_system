@@ -192,6 +192,31 @@ function loadFieldConfig(fieldType) {
                 }
             }
 
+            // Gerenciar required e visibilidade de label/description para tipos específicos
+            const typesWithoutLabel = ['message', 'welcome', 'loading'];
+            const fieldLabel = document.getElementById('fieldLabel');
+            const fieldDescription = document.getElementById('fieldDescription');
+            const fieldLabelContainer = fieldLabel?.closest('div');
+            const fieldDescriptionContainer = document.getElementById('fieldDescriptionContainer');
+
+            if (typesWithoutLabel.includes(fieldType)) {
+                // Tornar label e description opcionais
+                if (fieldLabel) fieldLabel.removeAttribute('required');
+                // Esconder containers para loading (não tem título nem descrição)
+                if (fieldType === 'loading') {
+                    if (fieldLabelContainer) fieldLabelContainer.style.display = 'none';
+                    if (fieldDescriptionContainer) fieldDescriptionContainer.style.display = 'none';
+                } else {
+                    if (fieldLabelContainer) fieldLabelContainer.style.display = 'block';
+                    if (fieldDescriptionContainer) fieldDescriptionContainer.style.display = 'block';
+                }
+            } else {
+                // Campos normais: label obrigatório
+                if (fieldLabel) fieldLabel.setAttribute('required', 'required');
+                if (fieldLabelContainer) fieldLabelContainer.style.display = 'block';
+                if (fieldDescriptionContainer) fieldDescriptionContainer.style.display = 'block';
+            }
+
             // Mostrar seção de lógica condicional (exceto para welcome e terms)
             const showConditionalLogic = !['welcome', 'terms'].includes(fieldType);
             const conditionalSection = document.getElementById('conditionalLogicSection');

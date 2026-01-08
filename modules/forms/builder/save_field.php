@@ -119,7 +119,9 @@ try {
         exit();
     }
 
-    if (empty($label)) {
+    // Label é opcional para tipos específicos (message, welcome, loading)
+    $typesWithoutLabel = ['message', 'welcome', 'loading'];
+    if (empty($label) && !in_array($type, $typesWithoutLabel)) {
         http_response_code(400);
         echo "Label/Pergunta é obrigatória";
         exit();
