@@ -13,7 +13,16 @@ $textColor = $customization['text_color'] ?? '#000000';
 $loadingId = 'loading-' . $field['id'];
 ?>
 
-<div class="text-center py-12" id="<?= $loadingId ?>">
+<style>
+/* Esconder elementos do loading */
+#<?= $loadingId ?>-container .question-number,
+#<?= $loadingId ?>-container .btn-primary,
+#<?= $loadingId ?>-container button {
+    display: none !important;
+}
+</style>
+
+<div class="text-center py-12" id="<?= $loadingId ?>" data-loading-field="true">
     <!-- Barra de Progresso -->
     <div class="mb-8 max-w-2xl mx-auto">
         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
@@ -47,38 +56,68 @@ $loadingId = 'loading-' . $field['id'];
 <script>
 (function() {
     const loadingId = '<?= $loadingId ?>';
-    const progressBar = document.getElementById(loadingId + '-progress-bar');
-    const textElement = document.getElementById(loadingId + '-text');
-    const phrases = <?= json_encode([$phrase1, $phrase2, $phrase3]) ?>;
+    const loadingElement = document.getElementById(loadingId);
 
-    let currentPhrase = 0;
+    if (!loadingElement) {
+        console.error('Loading element not found:', loadingId);
+        return;
+    }
 
-    // Iniciar animação
-    setTimeout(function() {
+    // Encontrar o slide pai (para esconder número e botão)
+    const parentSlide = loadingElement.closest('.question-slide, .field-container');
+    if (parentSlide) {
+        parentSlide.id = loadingId + '-container';
+
+        // Esconder número da questão e botões
+        const questionNumber = parentSlide.querySelector('.question-number');
+        if (questionNumber) questionNumber.style.display = 'none';
+
+        const buttons = parentSlide.querySelectorAll('button, .btn-primary');
+        buttons.forEach(btn => btn.style.display = 'none');
+    }
+
+    // Verificar se o slide está visível antes de iniciar
+    function isVisible(elem) {
+        return elem && elem.offsetParent !== null && getComputedStyle(elem).display !== 'none';
+    }
+
+    // Função para iniciar animação
+    function startAnimation() {
+        if (!isVisible(loadingElement)) {
+            console.log('Loading not visible yet, waiting...');
+            return;
+        }
+
+        console.log('🔄 Loading animation started for:', loadingId);
+
+        const progressBar = document.getElementById(loadingId + '-progress-bar');
+        const textElement = document.getElementById(loadingId + '-text');
+        const phrases = <?= json_encode([$phrase1, $phrase2, $phrase3]) ?>;
+
         // Fase 1: 0-33% (2 segundos)
         if (progressBar) progressBar.style.width = '33%';
+        if (textElement) textElement.textContent = phrases[0];
 
         setTimeout(function() {
             // Fase 2: 33-66% (2 segundos)
-            currentPhrase = 1;
-            if (textElement) textElement.textContent = phrases[currentPhrase];
             if (progressBar) progressBar.style.width = '66%';
+            if (textElement) textElement.textContent = phrases[1];
 
             setTimeout(function() {
                 // Fase 3: 66-100% (2 segundos)
-                currentPhrase = 2;
-                if (textElement) textElement.textContent = phrases[currentPhrase];
                 if (progressBar) progressBar.style.width = '100%';
+                if (textElement) textElement.textContent = phrases[2];
 
-                // Após 2 segundos, avançar para próximo campo
+                // Após 2 segundos (total 6s), avançar para próximo campo
                 setTimeout(function() {
+                    console.log('✅ Loading complete, advancing...');
                     <?php if ($displayMode === 'one-by-one'): ?>
-                        nextQuestion();
+                        if (typeof nextQuestion === 'function') {
+                            nextQuestion();
+                        }
                     <?php else: ?>
-                        const slide = document.getElementById('<?= $loadingId ?>').closest('.fade-in');
-                        if (slide) {
-                            const currentIndex = Array.from(slide.parentElement.children).indexOf(slide);
-                            const nextSlide = slide.parentElement.children[currentIndex + 1];
+                        if (parentSlide) {
+                            const nextSlide = parentSlide.nextElementSibling;
                             if (nextSlide) {
                                 nextSlide.scrollIntoView({ behavior: 'smooth' });
                             }
@@ -87,6 +126,39 @@ $loadingId = 'loading-' . $field['id'];
                 }, 2000);
             }, 2000);
         }, 2000);
-    }, 100);
+    }
+
+    // Se estiver no modo one-by-one, esperar o slide ficar visível
+    <?php if ($displayMode === 'one-by-one'): ?>
+        // Verificar quando o slide fica visível
+        const observer = new MutationObserver(function(mutations) {
+            if (isVisible(loadingElement)) {
+                observer.disconnect();
+                setTimeout(startAnimation, 200); // Pequeno delay para garantir renderização
+            }
+        });
+
+        observer.observe(parentSlide || loadingElement, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+
+        // Também verificar imediatamente
+        if (isVisible(loadingElement)) {
+            setTimeout(startAnimation, 200);
+        }
+    <?php else: ?>
+        // Modo all-at-once: iniciar quando entrar na viewport
+        const intersectionObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    intersectionObserver.disconnect();
+                    startAnimation();
+                }
+            });
+        }, { threshold: 0.5 });
+
+        intersectionObserver.observe(loadingElement);
+    <?php endif; ?>
 })();
 </script>

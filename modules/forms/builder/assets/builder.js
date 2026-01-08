@@ -979,6 +979,30 @@ async function editField(fieldId) {
                         if(rgShowComplementary) rgShowComplementary.checked = config.show_complementary_fields == 1;
                     }, 50);
                 }
+
+                // VSL
+                if (field.type === 'vsl' && Object.keys(config).length > 0) {
+                    setTimeout(() => {
+                        const vslVideoUrl = document.getElementById('vslVideoUrl');
+                        const vslWaitTime = document.getElementById('vslWaitTime');
+
+                        if(vslVideoUrl) vslVideoUrl.value = config.video_url || '';
+                        if(vslWaitTime) vslWaitTime.value = config.wait_time || 0;
+                    }, 50);
+                }
+
+                // Loading
+                if (field.type === 'loading' && Object.keys(config).length > 0) {
+                    setTimeout(() => {
+                        const loadingPhrase1 = document.getElementById('loadingPhrase1');
+                        const loadingPhrase2 = document.getElementById('loadingPhrase2');
+                        const loadingPhrase3 = document.getElementById('loadingPhrase3');
+
+                        if(loadingPhrase1) loadingPhrase1.value = config.phrase_1 || 'Analisando suas respostas...';
+                        if(loadingPhrase2) loadingPhrase2.value = config.phrase_2 || 'Processando informações...';
+                        if(loadingPhrase3) loadingPhrase3.value = config.phrase_3 || 'Preparando resultado...';
+                    }, 50);
+                }
             } catch (error) {
                 console.error('Erro ao preencher campos após carregar configurações:', error);
             }
