@@ -14,32 +14,16 @@ const flows = flowsData ? JSON.parse(flowsData) : [];
 let activeFlowId = null;
 
 // ============================================
-// ANIMAÇÃO DE LOADING PARA MODO OFERTA
+// ANIMAÇÃO DE LOADING
 // ============================================
 function generateLoadingAnimation(score = null) {
-    const loadingText1 = document.body.getAttribute('data-offer-loading1') || 'Analisando seu perfil...';
-    const loadingText2 = document.body.getAttribute('data-offer-loading2') || 'Procurando a melhor oferta...';
     const primaryColor = document.body.getAttribute('data-primary-color') || '#4f46e5';
-    const textColor = document.body.getAttribute('data-text-color') || '#000000';
 
     const html = `
-        <div class="text-center py-12">
-            <!-- Barra de Progresso -->
-            <div class="mb-8">
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                    <div id="offer-progress-bar" class="h-full transition-all duration-500 ease-out rounded-full"
-                         style="background-color: ${primaryColor}; width: 0%;"></div>
-                </div>
-            </div>
-
-            <!-- Texto Animado -->
-            <div id="offer-loading-text" class="text-2xl font-semibold mb-4" style="color: ${textColor}; min-height: 2.5rem;">
-                ${loadingText1}
-            </div>
-
+        <div class="text-center py-20">
             <!-- Spinner -->
-            <div class="inline-block">
-                <svg class="animate-spin h-12 w-12" style="color: ${primaryColor};" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <div class="inline-block mb-4">
+                <svg class="animate-spin h-16 w-16" style="color: ${primaryColor};" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -47,207 +31,27 @@ function generateLoadingAnimation(score = null) {
         </div>
     `;
 
-    // Iniciar animação após inserir no DOM
+    // Após 3 segundos, mostrar mensagem de sucesso
     setTimeout(() => {
-        const progressBar = document.getElementById('offer-progress-bar');
-        const textElement = document.getElementById('offer-loading-text');
+        const container = document.querySelector('form') || document.querySelector('.py-20');
+        if (container) {
+            container.innerHTML = `<div class="py-20">${generateSuccessMessage(score)}</div>`;
 
-        if (progressBar && textElement) {
-            // Fase 1: 0-50% (2 segundos)
-            progressBar.style.width = '50%';
-
-            // Trocar para texto 2 após 2 segundos
-            setTimeout(() => {
-                textElement.textContent = loadingText2;
-                // Fase 2: 50-100% (2 segundos)
-                progressBar.style.width = '100%';
-
-                // Após completar, mostrar oferta
-                setTimeout(() => {
-                    const container = document.querySelector('form') || document.querySelector('.py-20');
-                    if (container) {
-                        container.innerHTML = `<div class="py-20">${generateOfferMessage(score)}</div>`;
-                        initializeOfferRedirect();
-                    }
-                }, 2000);
-            }, 2000);
+            // Inicializar animação Lottie se presente
+            const lottieContainer = document.getElementById('lottie-success');
+            if (lottieContainer && typeof lottie !== 'undefined') {
+                lottie.loadAnimation({
+                    container: lottieContainer,
+                    renderer: 'svg',
+                    loop: false,
+                    autoplay: true,
+                    path: 'https://assets2.lottiefiles.com/packages/lf20_jbrw3hcz.json'
+                });
+            }
         }
-    }, 100);
+    }, 3000);
 
     return html;
-}
-
-// ============================================
-// TELA DE OFERTA
-// ============================================
-function generateOfferMessage(score = null) {
-    // Usar título e descrição da mensagem de sucesso
-    const successTitle = document.body.getAttribute('data-success-title') || 'Tudo certo!';
-    const successDescription = document.body.getAttribute('data-success-description') || 'Obrigado por responder nosso formulário.';
-
-    // Dados específicos da oferta
-    const anchorPrice = parseFloat(document.body.getAttribute('data-offer-anchor-price')) || 0;
-    const promoPrice = parseFloat(document.body.getAttribute('data-offer-promo-price')) || 0;
-    const scarcityText = document.body.getAttribute('data-offer-scarcity') || '';
-
-    const primaryColor = document.body.getAttribute('data-primary-color') || '#4f46e5';
-    const buttonTextColor = document.body.getAttribute('data-button-text-color') || '#ffffff';
-    const textColor = document.body.getAttribute('data-text-color') || '#000000';
-    const buttonRadius = document.body.getAttribute('data-button-radius') || '8';
-
-    // Dados de redirecionamento
-    const redirectEnabledRaw = document.body.getAttribute('data-redirect-enabled');
-    const redirectEnabled = redirectEnabledRaw === '1' || redirectEnabledRaw === 1 || redirectEnabledRaw === true;
-    const redirectUrl = document.body.getAttribute('data-redirect-url') || '';
-    const redirectType = document.body.getAttribute('data-redirect-type') || 'automatic';
-    const redirectButtonText = document.body.getAttribute('data-redirect-button-text') || 'Continuar';
-
-    // Branding
-    const hideBrandingRaw = document.body.getAttribute('data-hide-branding');
-    const hideBranding = hideBrandingRaw === '1' || hideBrandingRaw === 1 || hideBrandingRaw === true;
-
-    // Exibir pontuação
-    const showScoreRaw = document.body.getAttribute('data-show-score');
-    const showScore = showScoreRaw === '1' || showScoreRaw === 1 || showScoreRaw === true;
-
-    // Calcular desconto
-    const discount = anchorPrice > 0 && promoPrice > 0 ? Math.round(((anchorPrice - promoPrice) / anchorPrice) * 100) : 0;
-
-    let htmlContent = `
-        <div class="text-center fade-in">
-            <!-- Badge de Desconto (se houver) -->
-            ${discount > 0 ? `
-                <div class="inline-block mb-4 px-4 py-2 rounded-full font-bold text-white text-lg animate-pulse"
-                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    🎉 ${discount}% OFF
-                </div>
-            ` : ''}
-
-            <!-- Ícone/Animação ou Score -->
-            <div class="inline-flex items-center justify-center mb-6" style="width: 120px; height: 120px;">
-                ${showScore && score !== null && score !== undefined ?
-                    `<div class="w-20 h-20 rounded-full flex items-center justify-center" style="background-color: ${primaryColor};">
-                        <span class="text-4xl font-bold" style="color: ${buttonTextColor};">${score}</span>
-                    </div>` :
-                    `<div id="lottie-success" style="width: 120px; height: 120px;"></div>`
-                }
-            </div>
-
-            <!-- Score text (se mostrar pontuação) -->
-            ${showScore && score !== null && score !== undefined ?
-                `<p class="text-lg mb-4" style="color: ${primaryColor}; font-weight: 600;">Você fez ${score} ponto${score !== 1 ? 's' : ''}!</p>` :
-                ''
-            }
-
-            <!-- Título -->
-            <h2 class="text-4xl font-bold text-gray-900 mb-3">${successTitle}</h2>
-
-            <!-- Descrição -->
-            <p class="text-xl text-gray-600 mb-6">${successDescription}</p>
-
-            <!-- Preços -->
-            ${anchorPrice > 0 || promoPrice > 0 ? `
-                <div class="my-6">
-                    ${anchorPrice > 0 ? `
-                        <div class="text-2xl line-through opacity-50 mb-2 text-gray-500">
-                            R$ ${anchorPrice.toFixed(2).replace('.', ',')}
-                        </div>
-                    ` : ''}
-
-                    ${promoPrice > 0 ? `
-                        <div class="flex items-center justify-center gap-2 mb-2">
-                            <span class="text-3xl font-normal text-gray-900">R$</span>
-                            <span class="text-6xl font-bold" style="color: ${primaryColor};">
-                                ${Math.floor(promoPrice)}
-                            </span>
-                            ${(promoPrice % 1) > 0 ? `
-                                <span class="text-3xl font-normal text-gray-900">
-                                    ,${((promoPrice % 1) * 100).toFixed(0).padStart(2, '0')}
-                                </span>
-                            ` : ''}
-                        </div>
-                    ` : ''}
-                </div>
-            ` : ''}
-
-            <!-- Gatilho de Escassez -->
-            ${scarcityText ? `
-                <div class="inline-block mb-6 px-6 py-3 rounded-lg bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-800 dark:text-red-300 font-semibold">
-                    ${scarcityText}
-                </div>
-            ` : ''}
-    `;
-
-    // Adicionar mensagem de redirecionamento automático
-    if (redirectEnabled && redirectUrl && redirectType === 'automatic') {
-        htmlContent += `
-            <p class="text-sm text-gray-500 mt-4 flex items-center justify-center gap-2">
-                <i class="fas fa-spinner fa-spin"></i>
-                Aguarde, você será redirecionado(a)...
-            </p>
-        `;
-    }
-
-    // Adicionar botão de redirecionamento se ativado e tipo = button
-    if (redirectEnabled && redirectUrl && redirectType === 'button') {
-        htmlContent += `
-            <div class="mt-8">
-                <a href="${redirectUrl}" id="offer-redirect-button"
-                   class="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                   style="background-color: ${primaryColor}; color: ${buttonTextColor}; border-radius: ${buttonRadius}px;">
-                    ${redirectButtonText}
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        `;
-    }
-
-    htmlContent += `</div>`;
-
-    // Adicionar badge Formtalk se não estiver oculto
-    if (!hideBranding) {
-        // Converter cor hex para rgb com opacidade
-        const hexToRgb = (hex) => {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : {r: 0, g: 0, b: 0};
-        };
-
-        const rgb = hexToRgb(textColor);
-
-        htmlContent += `
-            <div class="mt-12 pt-8 border-t" style="border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1);">
-                <a href="https://formtalk.app" target="_blank" class="inline-flex items-center gap-2 text-sm transition-opacity hover:opacity-70" style="color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4);">
-                    <span>Feito com</span>
-                    <svg width="80" height="16" viewBox="0 0 80 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                        <text x="0" y="12" font-family="Arial, sans-serif" font-size="12" font-weight="bold">formtalk</text>
-                    </svg>
-                </a>
-            </div>
-        `;
-    }
-
-    return htmlContent;
-}
-
-// ============================================
-// INICIALIZAR REDIRECIONAMENTO DA OFERTA
-// ============================================
-function initializeOfferRedirect() {
-    const redirectEnabledRaw = document.body.getAttribute('data-redirect-enabled');
-    const redirectEnabled = redirectEnabledRaw === '1' || redirectEnabledRaw === 1 || redirectEnabledRaw === true;
-    const redirectUrl = document.body.getAttribute('data-redirect-url') || '';
-    const redirectType = document.body.getAttribute('data-redirect-type') || 'automatic';
-
-    // Redirecionamento automático
-    if (redirectEnabled && redirectUrl && redirectType === 'automatic') {
-        setTimeout(() => {
-            window.location.href = redirectUrl;
-        }, 3000);
-    }
 }
 
 // ============================================

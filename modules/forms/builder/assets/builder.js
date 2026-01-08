@@ -425,8 +425,18 @@ function editSuccessMessage() {
     // ============================================
     document.getElementById('fieldTypeContainer').style.display = 'none';
     document.getElementById('fieldRequiredContainer').style.display = 'none';
-    document.getElementById('mediaBtn').style.display = 'none';
+    document.getElementById('mediaBtn').style.display = 'block'; // Mostrar botão de mídia
     document.getElementById('optionsContainer').style.display = 'none';
+
+    // Carregar mídia da mensagem de sucesso se existir
+    const successMedia = currentSuccessMessageMedia || '';
+    if (successMedia) {
+        document.getElementById('mediaBtnText').textContent = 'Editar mídia';
+        document.getElementById('fieldMedia').value = successMedia;
+    } else {
+        document.getElementById('mediaBtnText').textContent = 'Inserir mídia';
+        document.getElementById('fieldMedia').value = '';
+    }
 
     // ============================================
     // ADICIONAR CAMPOS DE REDIRECIONAMENTO
@@ -441,13 +451,6 @@ function editSuccessMessage() {
     const hideBranding = currentHideBranding;
     const showScore = currentShowScore;
     const offerModeEnabled = currentOfferModeEnabled || false;
-    const offerLoadingText1 = currentOfferLoadingText1 || 'Analisando seu perfil...';
-    const offerLoadingText2 = currentOfferLoadingText2 || 'Procurando a melhor oferta...';
-    const offerTitle = currentOfferTitle || '';
-    const offerDescription = currentOfferDescription || '';
-    const offerAnchorPrice = currentOfferAnchorPrice || '';
-    const offerPromoPrice = currentOfferPromoPrice || '';
-    const offerScarcityText = currentOfferScarcityText || '';
 
     document.getElementById('dynamicFieldConfig').innerHTML = `
         <div class="space-y-4 mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
@@ -585,101 +588,21 @@ function editSuccessMessage() {
 
             <!-- Modo Oferta -->
             <h3 class="text-sm font-medium text-gray-900 dark:text-zinc-100 flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-zinc-700">
-                <i class="fas fa-badge-dollar"></i>
-                Modo Oferta
+                <i class="fas fa-spinner-third"></i>
+                Animação de Loading
                 ${!isProUser ? '<span class="text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1 rounded-full font-semibold">✨ PRO</span>' : ''}
             </h3>
 
             <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-700/50 rounded-lg ${!isProUser ? 'opacity-50 cursor-not-allowed' : ''}">
                 <div class="flex-1">
-                    <label class="text-sm font-medium text-gray-700 dark:text-zinc-300">Exibir oferta após loading</label>
-                    <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Mostra animação e depois apresenta uma oferta especial</p>
+                    <label class="text-sm font-medium text-gray-700 dark:text-zinc-300">Exibir loading antes da mensagem de sucesso</label>
+                    <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Mostra animação de loading antes de exibir a mensagem de sucesso</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" id="offerModeEnabled" ${!isProUser ? 'disabled' : ''} ${offerModeEnabled ? 'checked' : ''}
-                           onchange="toggleOfferFields(this.checked)"
                            class="sr-only peer">
                     <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer dark:bg-zinc-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-purple-500 dark:peer-checked:bg-purple-500"></div>
                 </label>
-            </div>
-
-            <!-- Campos do Modo Oferta (visíveis apenas se ativado) -->
-            <div id="offerFieldsContainer" style="display: ${offerModeEnabled ? 'block' : 'none'};" class="space-y-3 mt-3">
-
-                <!-- Textos do Loading -->
-                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg space-y-2">
-                    <h4 class="text-xs font-semibold text-indigo-900 dark:text-indigo-200 flex items-center gap-1">
-                        <i class="fas fa-spinner-third"></i> Textos da Animação
-                    </h4>
-                    <input type="text"
-                           id="offerLoadingText1"
-                           placeholder="Analisando seu perfil..."
-                           value="${offerLoadingText1}"
-                           maxlength="100"
-                           class="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
-                    <input type="text"
-                           id="offerLoadingText2"
-                           placeholder="Procurando a melhor oferta..."
-                           value="${offerLoadingText2}"
-                           maxlength="100"
-                           class="w-full px-3 py-2 border border-indigo-300 dark:border-indigo-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
-                    <p class="text-xs text-indigo-700 dark:text-indigo-300">
-                        <i class="fas fa-info-circle"></i> Cada texto aparece por 2 segundos com barra de progresso
-                    </p>
-                </div>
-
-                <!-- Preços -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
-                            <i class="fas fa-tag mr-1"></i> De: R$
-                        </label>
-                        <input type="number"
-                               id="offerAnchorPrice"
-                               placeholder="997,00"
-                               step="0.01"
-                               min="0"
-                               value="${offerAnchorPrice}"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
-                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">Preço riscado</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
-                            <i class="fas fa-dollar-sign mr-1"></i> Por: R$ *
-                        </label>
-                        <input type="number"
-                               id="offerPromoPrice"
-                               placeholder="497,00"
-                               step="0.01"
-                               min="0"
-                               value="${offerPromoPrice}"
-                               class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
-                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">Preço promocional</p>
-                    </div>
-                </div>
-
-                <!-- Gatilho de Escassez -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
-                        <i class="fas fa-exclamation-triangle mr-1"></i> Gatilho de Escassez
-                    </label>
-                    <input type="text"
-                           id="offerScarcityText"
-                           placeholder="⚠️ Restam apenas 3 vagas!"
-                           value="${offerScarcityText}"
-                           maxlength="100"
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
-                    <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
-                        Texto de urgência (opcional)
-                    </p>
-                </div>
-
-                <div class="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
-                    <p class="text-xs text-yellow-800 dark:text-yellow-200">
-                        <i class="fas fa-lightbulb mr-1"></i>
-                        <strong>Dica:</strong> As opções de redirecionamento acima funcionam normalmente com o modo oferta. Configure um link para sua página de checkout!
-                    </p>
-                </div>
             </div>
 
         </div>
@@ -694,10 +617,6 @@ function editSuccessMessage() {
 
     window.toggleButtonTextField = function(showButton) {
         document.getElementById('buttonTextContainer').style.display = showButton ? 'block' : 'none';
-    };
-
-    window.toggleOfferFields = function(enabled) {
-        document.getElementById('offerFieldsContainer').style.display = enabled ? 'block' : 'none';
     };
     
     // ============================================
@@ -731,6 +650,12 @@ async function updateSuccessMessage(title, description) {
     formData.append('success_message_title', title);
     formData.append('success_message_description', description);
 
+    // Adicionar mídia da mensagem de sucesso
+    const mediaEl = document.getElementById('fieldMedia');
+    if (mediaEl) {
+        formData.append('success_message_media', mediaEl.value || '');
+    }
+
     // Adicionar campos de redirecionamento
     const redirectEnabledEl = document.getElementById('redirectEnabled');
     const redirectUrlEl = document.getElementById('redirectUrl');
@@ -756,27 +681,10 @@ async function updateSuccessMessage(title, description) {
         formData.append('show_score', showScoreEl.checked ? 1 : 0);
     }
 
-    // Adicionar campos do modo oferta
+    // Adicionar campo do modo loading
     const offerModeEnabledEl = document.getElementById('offerModeEnabled');
     if (offerModeEnabledEl) {
         formData.append('offer_mode_enabled', offerModeEnabledEl.checked ? 1 : 0);
-
-        // Só enviar os outros campos se o modo oferta estiver ativado
-        if (offerModeEnabledEl.checked) {
-            const offerLoadingText1El = document.getElementById('offerLoadingText1');
-            const offerLoadingText2El = document.getElementById('offerLoadingText2');
-            const offerAnchorPriceEl = document.getElementById('offerAnchorPrice');
-            const offerPromoPriceEl = document.getElementById('offerPromoPrice');
-            const offerScarcityTextEl = document.getElementById('offerScarcityText');
-
-            formData.append('offer_loading_text_1', offerLoadingText1El ? offerLoadingText1El.value : 'Analisando seu perfil...');
-            formData.append('offer_loading_text_2', offerLoadingText2El ? offerLoadingText2El.value : 'Procurando a melhor oferta...');
-            formData.append('offer_title', '');
-            formData.append('offer_description', '');
-            formData.append('offer_anchor_price', offerAnchorPriceEl ? offerAnchorPriceEl.value : '');
-            formData.append('offer_promo_price', offerPromoPriceEl ? offerPromoPriceEl.value : '');
-            formData.append('offer_scarcity_text', offerScarcityTextEl ? offerScarcityTextEl.value : '');
-        }
     }
 
     try {
@@ -793,6 +701,9 @@ async function updateSuccessMessage(title, description) {
             document.getElementById('successMessageDescription').textContent = description;
 
             // Atualizar variáveis globais com os novos valores
+            if (mediaEl) {
+                currentSuccessMessageMedia = mediaEl.value || '';
+            }
             if (redirectEnabledEl) {
                 currentRedirectEnabled = redirectEnabledEl.checked ? 1 : 0;
                 currentRedirectUrl = redirectUrlEl ? redirectUrlEl.value : '';
@@ -807,15 +718,6 @@ async function updateSuccessMessage(title, description) {
             }
             if (offerModeEnabledEl) {
                 currentOfferModeEnabled = offerModeEnabledEl.checked ? 1 : 0;
-                if (offerModeEnabledEl.checked) {
-                    currentOfferLoadingText1 = document.getElementById('offerLoadingText1')?.value || 'Analisando seu perfil...';
-                    currentOfferLoadingText2 = document.getElementById('offerLoadingText2')?.value || 'Procurando a melhor oferta...';
-                    currentOfferTitle = '';
-                    currentOfferDescription = '';
-                    currentOfferAnchorPrice = document.getElementById('offerAnchorPrice')?.value || '';
-                    currentOfferPromoPrice = document.getElementById('offerPromoPrice')?.value || '';
-                    currentOfferScarcityText = document.getElementById('offerScarcityText')?.value || '';
-                }
             }
 
             // Resetar o formulário
