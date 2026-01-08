@@ -292,6 +292,7 @@ require_once __DIR__ . '/builder_sidebar.php';
                         <select name="type" id="fieldType" required class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4EA44B] dark:bg-zinc-700 dark:text-zinc-100">
                             <option value="welcome">Boas-vindas</option>
                             <option value="message">Mensagem</option>
+                            <option value="loading">Carregamento</option>
                             <option value="vsl" <?= !PlanService::hasProAccess() ? 'disabled' : '' ?>>VSL (Video Sales Letter) <?= !PlanService::hasProAccess() ? '✨ PRO' : '' ?></option>
                             <option value="name">Nome Completo</option>
                             <option value="text">Texto Curto</option>
@@ -423,7 +424,6 @@ let currentRedirectType = <?= json_encode($successRedirectType) ?>;
 let currentRedirectButtonText = <?= json_encode($successBtRedirect) ?>;
 let currentHideBranding = <?= $hideBranding ?>;
 let currentShowScore = <?= $showScore ?>;
-let currentOfferModeEnabled = <?= isset($customization['offer_mode_enabled']) ? $customization['offer_mode_enabled'] : 0 ?>;
 let currentSuccessMessageMedia = <?= json_encode($customization['success_message_media'] ?? '') ?>;
 </script>
 <script src="<?= assetUrl('/modules/forms/builder/assets/builder.js') ?>"></script>

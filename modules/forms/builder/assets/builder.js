@@ -126,9 +126,9 @@ function loadFieldConfig(fieldType) {
             if (template.trim() !== '') {
                 dynamicConfigContainer.innerHTML = template;
 
-                // Esconder botão de mídia para VSL (pois usa campo de URL próprio)
+                // Esconder botão de mídia para VSL e Loading (pois usam configurações próprias)
                 const mediaBtn = document.getElementById('mediaBtn');
-                if (fieldType === 'vsl' && mediaBtn) {
+                if (['vsl', 'loading'].includes(fieldType) && mediaBtn) {
                     mediaBtn.style.display = 'none';
                 } else if (mediaBtn) {
                     mediaBtn.style.display = 'block';
@@ -184,6 +184,10 @@ function loadFieldConfig(fieldType) {
                     case 'vsl':
                         const vslConfig = document.getElementById('vslConfig');
                         if(vslConfig) vslConfig.style.display = 'block';
+                        break;
+                    case 'loading':
+                        const loadingConfig = document.getElementById('loadingConfig');
+                        if(loadingConfig) loadingConfig.style.display = 'block';
                         break;
                 }
             }
@@ -462,7 +466,6 @@ function editSuccessMessage() {
     const redirectButtonText = currentRedirectButtonText;
     const hideBranding = currentHideBranding;
     const showScore = currentShowScore;
-    const offerModeEnabled = currentOfferModeEnabled || false;
 
     document.getElementById('dynamicFieldConfig').innerHTML = `
         <div class="space-y-4 mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
@@ -598,25 +601,6 @@ function editSuccessMessage() {
                 </label>
             </div>
 
-            <!-- Modo Oferta -->
-            <h3 class="text-sm font-medium text-gray-900 dark:text-zinc-100 flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-zinc-700">
-                <i class="fas fa-spinner-third"></i>
-                Animação de Loading
-                ${!isProUser ? '<span class="text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white px-2 py-1 rounded-full font-semibold">✨ PRO</span>' : ''}
-            </h3>
-
-            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-700/50 rounded-lg ${!isProUser ? 'opacity-50 cursor-not-allowed' : ''}">
-                <div class="flex-1">
-                    <label class="text-sm font-medium text-gray-700 dark:text-zinc-300">Exibir loading antes da mensagem de sucesso</label>
-                    <p class="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">Mostra animação de loading antes de exibir a mensagem de sucesso</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="offerModeEnabled" ${!isProUser ? 'disabled' : ''} ${offerModeEnabled ? 'checked' : ''}
-                           class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer dark:bg-zinc-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-zinc-600 peer-checked:bg-purple-500 dark:peer-checked:bg-purple-500"></div>
-                </label>
-            </div>
-
         </div>
     `;
 
@@ -693,12 +677,6 @@ async function updateSuccessMessage(title, description) {
         formData.append('show_score', showScoreEl.checked ? 1 : 0);
     }
 
-    // Adicionar campo do modo loading
-    const offerModeEnabledEl = document.getElementById('offerModeEnabled');
-    if (offerModeEnabledEl) {
-        formData.append('offer_mode_enabled', offerModeEnabledEl.checked ? 1 : 0);
-    }
-
     try {
         const res = await fetch('/modules/forms/customization/save_success_message.php', {
             method: 'POST',
@@ -727,9 +705,6 @@ async function updateSuccessMessage(title, description) {
             }
             if (showScoreEl) {
                 currentShowScore = showScoreEl.checked ? 1 : 0;
-            }
-            if (offerModeEnabledEl) {
-                currentOfferModeEnabled = offerModeEnabledEl.checked ? 1 : 0;
             }
 
             // Resetar o formulário

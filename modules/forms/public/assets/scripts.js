@@ -14,59 +14,9 @@ const flows = flowsData ? JSON.parse(flowsData) : [];
 let activeFlowId = null;
 
 // ============================================
-// ANIMAÇÃO DE LOADING
-// ============================================
-function generateLoadingAnimation(score = null) {
-    const primaryColor = document.body.getAttribute('data-primary-color') || '#4f46e5';
-
-    const html = `
-        <div class="text-center py-20">
-            <!-- Spinner -->
-            <div class="inline-block mb-4">
-                <svg class="animate-spin h-16 w-16" style="color: ${primaryColor};" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </div>
-        </div>
-    `;
-
-    // Após 3 segundos, mostrar mensagem de sucesso
-    setTimeout(() => {
-        const container = document.querySelector('form') || document.querySelector('.py-20');
-        if (container) {
-            container.innerHTML = `<div class="py-20">${generateSuccessMessage(score)}</div>`;
-
-            // Inicializar animação Lottie se presente
-            const lottieContainer = document.getElementById('lottie-success');
-            if (lottieContainer && typeof lottie !== 'undefined') {
-                lottie.loadAnimation({
-                    container: lottieContainer,
-                    renderer: 'svg',
-                    loop: false,
-                    autoplay: true,
-                    path: 'https://assets2.lottiefiles.com/packages/lf20_jbrw3hcz.json'
-                });
-            }
-        }
-    }, 3000);
-
-    return html;
-}
-
-// ============================================
 // FUNÇÃO PARA GERAR MENSAGEM DE SUCESSO COM REDIRECIONAMENTO
 // ============================================
 function generateSuccessMessage(score = null) {
-    // Verificar se modo oferta está ativado
-    const offerModeRaw = document.body.getAttribute('data-offer-mode');
-    const offerMode = offerModeRaw === '1' || offerModeRaw === 1 || offerModeRaw === true;
-
-    // Se modo oferta ativado, mostrar animação e depois oferta
-    if (offerMode) {
-        return generateLoadingAnimation(score);
-    }
-
     // Mensagem de sucesso padrão
     const successTitle = document.body.getAttribute('data-success-title') || 'Tudo certo!';
     const successDescription = document.body.getAttribute('data-success-description') || 'Obrigado por responder nosso formulário.';

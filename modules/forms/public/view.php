@@ -612,7 +612,6 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
       data-redirect-button-text="<?= htmlspecialchars($customization['success_bt_redirect'] ?? 'Continuar') ?>"
       data-hide-branding="<?= $customization['hide_formtalk_branding'] ?? 0 ?>"
       data-show-score="<?= $customization['show_score'] ?? 0 ?>"
-      data-offer-mode="<?= $customization['offer_mode_enabled'] ?? 0 ?>"
       data-text-color="<?= htmlspecialchars($customization['text_color']) ?>"
       data-primary-color="<?= htmlspecialchars($customization['primary_color']) ?>"
       data-button-text-color="<?= htmlspecialchars($customization['button_text_color']) ?>"

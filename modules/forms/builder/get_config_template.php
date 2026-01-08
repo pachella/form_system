@@ -214,6 +214,71 @@ if ($type === 'terms'):
 <?php
 endif;
 
+// LOADING - Carregamento
+if ($type === 'loading'):
+?>
+    <div id="loadingConfig" style="display: none;">
+        <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-4">
+                <p class="text-xs text-blue-700 dark:text-blue-300">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    <strong>Sobre:</strong> O campo Carregamento não possui título nem descrição. Apenas exibe 3 frases de impacto com barra de progresso (2s cada) e avança automaticamente após 6 segundos.
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                    <i class="fas fa-quote-left mr-1"></i> Frase 1 (0-2s) *
+                </label>
+                <input type="text"
+                       name="loading_phrase_1"
+                       id="loadingPhrase1"
+                       placeholder="Analisando suas respostas..."
+                       value="Analisando suas respostas..."
+                       maxlength="150"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100"
+                       required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                    <i class="fas fa-quote-left mr-1"></i> Frase 2 (2-4s) *
+                </label>
+                <input type="text"
+                       name="loading_phrase_2"
+                       id="loadingPhrase2"
+                       placeholder="Processando informações..."
+                       value="Processando informações..."
+                       maxlength="150"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100"
+                       required>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                    <i class="fas fa-quote-left mr-1"></i> Frase 3 (4-6s) *
+                </label>
+                <input type="text"
+                       name="loading_phrase_3"
+                       id="loadingPhrase3"
+                       placeholder="Preparando resultado..."
+                       value="Preparando resultado..."
+                       maxlength="150"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100"
+                       required>
+            </div>
+
+            <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg">
+                <p class="text-xs text-indigo-700 dark:text-indigo-300">
+                    <i class="fas fa-clock mr-1"></i>
+                    <strong>Duração:</strong> Cada frase aparece por 2 segundos com barra de progresso. Total: 6 segundos. Avança automaticamente para o próximo campo.
+                </p>
+            </div>
+        </div>
+    </div>
+<?php
+endif;
+
 // VSL - Video Sales Letter
 if ($type === 'vsl'):
 ?>
