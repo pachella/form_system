@@ -14,9 +14,201 @@ const flows = flowsData ? JSON.parse(flowsData) : [];
 let activeFlowId = null;
 
 // ============================================
+// ANIMAÇÃO DE LOADING PARA MODO OFERTA
+// ============================================
+function generateLoadingAnimation(score = null) {
+    const loadingText1 = document.body.getAttribute('data-offer-loading1') || 'Analisando seu perfil...';
+    const loadingText2 = document.body.getAttribute('data-offer-loading2') || 'Procurando a melhor oferta...';
+    const primaryColor = document.body.getAttribute('data-primary-color') || '#4f46e5';
+    const textColor = document.body.getAttribute('data-text-color') || '#000000';
+
+    const html = `
+        <div class="text-center py-12">
+            <!-- Barra de Progresso -->
+            <div class="mb-8">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                    <div id="offer-progress-bar" class="h-full transition-all duration-500 ease-out rounded-full"
+                         style="background-color: ${primaryColor}; width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Texto Animado -->
+            <div id="offer-loading-text" class="text-2xl font-semibold mb-4" style="color: ${textColor}; min-height: 2.5rem;">
+                ${loadingText1}
+            </div>
+
+            <!-- Spinner -->
+            <div class="inline-block">
+                <svg class="animate-spin h-12 w-12" style="color: ${primaryColor};" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </div>
+    `;
+
+    // Iniciar animação após inserir no DOM
+    setTimeout(() => {
+        const progressBar = document.getElementById('offer-progress-bar');
+        const textElement = document.getElementById('offer-loading-text');
+
+        if (progressBar && textElement) {
+            // Fase 1: 0-50% (2 segundos)
+            progressBar.style.width = '50%';
+
+            // Trocar para texto 2 após 2 segundos
+            setTimeout(() => {
+                textElement.textContent = loadingText2;
+                // Fase 2: 50-100% (2 segundos)
+                progressBar.style.width = '100%';
+
+                // Após completar, mostrar oferta
+                setTimeout(() => {
+                    const container = document.querySelector('form') || document.querySelector('.py-20');
+                    if (container) {
+                        container.innerHTML = `<div class="py-20">${generateOfferMessage(score)}</div>`;
+                        initializeOfferRedirect();
+                    }
+                }, 2000);
+            }, 2000);
+        }
+    }, 100);
+
+    return html;
+}
+
+// ============================================
+// TELA DE OFERTA
+// ============================================
+function generateOfferMessage(score = null) {
+    const offerTitle = document.body.getAttribute('data-offer-title') || 'Oferta Especial Para Você!';
+    const offerDescription = document.body.getAttribute('data-offer-description') || '';
+    const anchorPrice = parseFloat(document.body.getAttribute('data-offer-anchor-price')) || 0;
+    const promoPrice = parseFloat(document.body.getAttribute('data-offer-promo-price')) || 0;
+    const scarcityText = document.body.getAttribute('data-offer-scarcity') || '';
+
+    const primaryColor = document.body.getAttribute('data-primary-color') || '#4f46e5';
+    const buttonTextColor = document.body.getAttribute('data-button-text-color') || '#ffffff';
+    const textColor = document.body.getAttribute('data-text-color') || '#000000';
+    const buttonRadius = document.body.getAttribute('data-button-radius') || '8';
+
+    // Dados de redirecionamento
+    const redirectEnabledRaw = document.body.getAttribute('data-redirect-enabled');
+    const redirectEnabled = redirectEnabledRaw === '1' || redirectEnabledRaw === 1 || redirectEnabledRaw === true;
+    const redirectUrl = document.body.getAttribute('data-redirect-url') || '';
+    const redirectType = document.body.getAttribute('data-redirect-type') || 'automatic';
+    const redirectButtonText = document.body.getAttribute('data-redirect-button-text') || 'Continuar';
+
+    // Calcular desconto
+    const discount = anchorPrice > 0 && promoPrice > 0 ? Math.round(((anchorPrice - promoPrice) / anchorPrice) * 100) : 0;
+
+    let html = `
+        <div class="text-center fade-in max-w-2xl mx-auto">
+            <!-- Badge de Desconto (se houver) -->
+            ${discount > 0 ? `
+                <div class="inline-block mb-4 px-4 py-2 rounded-full font-bold text-white text-lg animate-pulse"
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    🎉 ${discount}% OFF
+                </div>
+            ` : ''}
+
+            <!-- Título -->
+            <h2 class="text-4xl md:text-5xl font-bold mb-4" style="color: ${textColor};">
+                ${offerTitle}
+            </h2>
+
+            <!-- Descrição -->
+            ${offerDescription ? `
+                <p class="text-lg md:text-xl mb-8 opacity-80" style="color: ${textColor};">
+                    ${offerDescription}
+                </p>
+            ` : ''}
+
+            <!-- Preços -->
+            <div class="mb-8">
+                ${anchorPrice > 0 ? `
+                    <div class="text-2xl line-through opacity-50 mb-2" style="color: ${textColor};">
+                        R$ ${anchorPrice.toFixed(2).replace('.', ',')}
+                    </div>
+                ` : ''}
+
+                ${promoPrice > 0 ? `
+                    <div class="flex items-center justify-center gap-2 mb-2">
+                        <span class="text-3xl md:text-4xl font-normal" style="color: ${textColor};">R$</span>
+                        <span class="text-6xl md:text-7xl font-bold" style="color: ${primaryColor};">
+                            ${Math.floor(promoPrice)}
+                        </span>
+                        ${(promoPrice % 1) > 0 ? `
+                            <span class="text-3xl md:text-4xl font-normal" style="color: ${textColor};">
+                                ,${((promoPrice % 1) * 100).toFixed(0).padStart(2, '0')}
+                            </span>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- Gatilho de Escassez -->
+            ${scarcityText ? `
+                <div class="inline-block mb-6 px-6 py-3 rounded-lg bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-800 dark:text-red-300 font-semibold text-lg">
+                    ${scarcityText}
+                </div>
+            ` : ''}
+
+            <!-- Botão / Redirecionamento -->
+            ${redirectEnabled && redirectUrl ? `
+                ${redirectType === 'button' ? `
+                    <div class="mt-8">
+                        <a href="${redirectUrl}" id="offer-redirect-button"
+                           class="inline-flex items-center gap-3 px-10 py-5 rounded-lg font-bold text-xl transition-all transform hover:scale-105 hover:shadow-2xl"
+                           style="background-color: ${primaryColor}; color: ${buttonTextColor}; border-radius: ${buttonRadius}px;">
+                            ${redirectButtonText}
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                ` : `
+                    <p class="text-sm opacity-60 mt-4 flex items-center justify-center gap-2" style="color: ${textColor};">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Aguarde, você será redirecionado(a)...
+                    </p>
+                `}
+            ` : ''}
+        </div>
+    `;
+
+    return html;
+}
+
+// ============================================
+// INICIALIZAR REDIRECIONAMENTO DA OFERTA
+// ============================================
+function initializeOfferRedirect() {
+    const redirectEnabledRaw = document.body.getAttribute('data-redirect-enabled');
+    const redirectEnabled = redirectEnabledRaw === '1' || redirectEnabledRaw === 1 || redirectEnabledRaw === true;
+    const redirectUrl = document.body.getAttribute('data-redirect-url') || '';
+    const redirectType = document.body.getAttribute('data-redirect-type') || 'automatic';
+
+    // Redirecionamento automático
+    if (redirectEnabled && redirectUrl && redirectType === 'automatic') {
+        setTimeout(() => {
+            window.location.href = redirectUrl;
+        }, 3000);
+    }
+}
+
+// ============================================
 // FUNÇÃO PARA GERAR MENSAGEM DE SUCESSO COM REDIRECIONAMENTO
 // ============================================
 function generateSuccessMessage(score = null) {
+    // Verificar se modo oferta está ativado
+    const offerModeRaw = document.body.getAttribute('data-offer-mode');
+    const offerMode = offerModeRaw === '1' || offerModeRaw === 1 || offerModeRaw === true;
+
+    // Se modo oferta ativado, mostrar animação e depois oferta
+    if (offerMode) {
+        return generateLoadingAnimation(score);
+    }
+
+    // Mensagem de sucesso padrão
     const successTitle = document.body.getAttribute('data-success-title') || 'Tudo certo!';
     const successDescription = document.body.getAttribute('data-success-description') || 'Obrigado por responder nosso formulário.';
 
