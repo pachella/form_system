@@ -126,6 +126,14 @@ function loadFieldConfig(fieldType) {
             if (template.trim() !== '') {
                 dynamicConfigContainer.innerHTML = template;
 
+                // Esconder botão de mídia para VSL (pois usa campo de URL próprio)
+                const mediaBtn = document.getElementById('mediaBtn');
+                if (fieldType === 'vsl' && mediaBtn) {
+                    mediaBtn.style.display = 'none';
+                } else if (mediaBtn) {
+                    mediaBtn.style.display = 'block';
+                }
+
                 // Exibir os containers específicos após carregar o template
                 switch(fieldType) {
                     case 'radio':
@@ -172,6 +180,10 @@ function loadFieldConfig(fieldType) {
                     case 'rg':
                         const rgConfig = document.getElementById('rgConfig');
                         if(rgConfig) rgConfig.style.display = 'block';
+                        break;
+                    case 'vsl':
+                        const vslConfig = document.getElementById('vslConfig');
+                        if(vslConfig) vslConfig.style.display = 'block';
                         break;
                 }
             }
