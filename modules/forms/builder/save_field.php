@@ -93,6 +93,19 @@ try {
         $config['show_complementary_fields'] = isset($_POST['rg_show_complementary']) ? 1 : 0;
     }
 
+    // VSL config
+    if ($type === 'vsl') {
+        $config['video_url'] = trim($_POST['vsl_video_url'] ?? '');
+        $config['wait_time'] = intval($_POST['vsl_wait_time'] ?? 0);
+    }
+
+    // Loading config
+    if ($type === 'loading') {
+        $config['phrase_1'] = trim($_POST['loading_phrase_1'] ?? 'Analisando suas respostas...');
+        $config['phrase_2'] = trim($_POST['loading_phrase_2'] ?? 'Processando informações...');
+        $config['phrase_3'] = trim($_POST['loading_phrase_3'] ?? 'Preparando resultado...');
+    }
+
     $configJson = !empty($config) ? json_encode($config) : null;
 
     // Capturar lógica condicional
@@ -112,7 +125,7 @@ try {
         exit();
     }
 
-    $allowedTypes = ['text', 'textarea', 'email', 'phone', 'date', 'cpf', 'cnpj', 'rg', 'money', 'slider', 'rating', 'address', 'file', 'terms', 'radio', 'select', 'name', 'message', 'welcome', 'url', 'number', 'range', 'image_choice'];
+    $allowedTypes = ['text', 'textarea', 'email', 'phone', 'date', 'cpf', 'cnpj', 'rg', 'money', 'slider', 'rating', 'address', 'file', 'terms', 'radio', 'select', 'name', 'message', 'welcome', 'url', 'number', 'range', 'image_choice', 'vsl', 'loading'];
     if (!in_array($type, $allowedTypes)) {
         http_response_code(400);
         echo "Tipo de campo inválido";

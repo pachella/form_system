@@ -14,12 +14,95 @@ const flows = flowsData ? JSON.parse(flowsData) : [];
 let activeFlowId = null;
 
 // ============================================
+// FUNÇÃO HELPER PARA RENDERIZAR MÍDIA
+// ============================================
+function renderMediaHTML(mediaData) {
+    if (!mediaData || mediaData === '') {
+        return '';
+    }
+
+    try {
+        const media = JSON.parse(mediaData);
+
+        if (media && media.type === 'video') {
+            const url = media.url || '';
+            const service = media.service || 'direct';
+
+            if (service === 'youtube') {
+                let videoId = '';
+                if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('youtube.com/watch?v=')) {
+                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                    videoId = urlParams.get('v') || '';
+                }
+
+                if (videoId) {
+                    return `
+                        <div class="media-container mb-6 aspect-video max-w-2xl mx-auto">
+                            <iframe class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700"
+                                    src="https://www.youtube.com/embed/${videoId}"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    `;
+                }
+            } else if (service === 'vimeo') {
+                const match = url.match(/vimeo\.com\/(\d+)/);
+                if (match) {
+                    const videoId = match[1];
+                    return `
+                        <div class="media-container mb-6 aspect-video max-w-2xl mx-auto">
+                            <iframe class="w-full h-full rounded-lg border border-gray-200 dark:border-zinc-700"
+                                    src="https://player.vimeo.com/video/${videoId}"
+                                    frameborder="0"
+                                    allow="autoplay; fullscreen; picture-in-picture"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    `;
+                }
+            }
+        } else if (media && media.type === 'image') {
+            const url = media.url || '';
+            if (url) {
+                return `
+                    <div class="media-container mb-6 max-w-2xl mx-auto">
+                        <img src="${url}"
+                             alt="Imagem"
+                             class="w-full h-auto rounded-lg border border-gray-200 dark:border-zinc-700"
+                             style="max-height: 500px; object-fit: contain;">
+                    </div>
+                `;
+            }
+        }
+    } catch (e) {
+        // Se não for JSON, pode ser uma URL direta de imagem
+        if (mediaData.startsWith('http')) {
+            return `
+                <div class="media-container mb-6 max-w-2xl mx-auto">
+                    <img src="${mediaData}"
+                         alt="Imagem"
+                         class="w-full h-auto rounded-lg border border-gray-200 dark:border-zinc-700"
+                         style="max-height: 500px; object-fit: contain;">
+                </div>
+            `;
+        }
+    }
+
+    return '';
+}
+
+// ============================================
 // FUNÇÃO PARA GERAR MENSAGEM DE SUCESSO COM REDIRECIONAMENTO
 // ============================================
 function generateSuccessMessage(score = null) {
     // Mensagem de sucesso padrão
     const successTitle = document.body.getAttribute('data-success-title') || 'Tudo certo!';
     const successDescription = document.body.getAttribute('data-success-description') || 'Obrigado por responder nosso formulário.';
+    const successMedia = document.body.getAttribute('data-success-media') || '';
 
     // Dados de redirecionamento
     const redirectEnabledRaw = document.body.getAttribute('data-redirect-enabled');
@@ -65,6 +148,8 @@ function generateSuccessMessage(score = null) {
             }
             <h2 class="text-4xl font-bold text-gray-900 mb-3">${successTitle}</h2>
             <p class="text-xl text-gray-600 mb-6">${successDescription}</p>
+
+            ${renderMediaHTML(successMedia)}
     `;
 
     // Adicionar mensagem de redirecionamento automático
