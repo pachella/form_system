@@ -79,7 +79,7 @@ require_once __DIR__ . '/builder_sidebar.php';
 <!-- SortableJS para drag and drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
-<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=11.0.5">
+<link rel="stylesheet" href="/modules/forms/builder/assets/builder.css?v=11.0.10">
 
 <div class="max-w-6xl mx-auto">
     <!-- Header -->
@@ -430,7 +430,7 @@ let currentOfferAnchorPrice = <?= isset($customization['offer_anchor_price']) ? 
 let currentOfferPromoPrice = <?= isset($customization['offer_promo_price']) ? $customization['offer_promo_price'] : '""' ?>;
 let currentOfferScarcityText = <?= json_encode($customization['offer_scarcity_text'] ?? '') ?>;
 </script>
-<script src="/modules/forms/builder/assets/builder.js?v=11.0.5"></script>
+<script src="/modules/forms/builder/assets/builder.js?v=11.0.10"></script>
 
 <?php
 require_once __DIR__ . '/../../../views/layout/footer.php';

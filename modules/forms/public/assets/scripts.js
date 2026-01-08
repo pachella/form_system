@@ -81,8 +81,11 @@ function generateLoadingAnimation(score = null) {
 // TELA DE OFERTA
 // ============================================
 function generateOfferMessage(score = null) {
-    const offerTitle = document.body.getAttribute('data-offer-title') || 'Oferta Especial Para Você!';
-    const offerDescription = document.body.getAttribute('data-offer-description') || '';
+    // Usar título e descrição da mensagem de sucesso
+    const successTitle = document.body.getAttribute('data-success-title') || 'Tudo certo!';
+    const successDescription = document.body.getAttribute('data-success-description') || 'Obrigado por responder nosso formulário.';
+
+    // Dados específicos da oferta
     const anchorPrice = parseFloat(document.body.getAttribute('data-offer-anchor-price')) || 0;
     const promoPrice = parseFloat(document.body.getAttribute('data-offer-promo-price')) || 0;
     const scarcityText = document.body.getAttribute('data-offer-scarcity') || '';
@@ -99,11 +102,19 @@ function generateOfferMessage(score = null) {
     const redirectType = document.body.getAttribute('data-redirect-type') || 'automatic';
     const redirectButtonText = document.body.getAttribute('data-redirect-button-text') || 'Continuar';
 
+    // Branding
+    const hideBrandingRaw = document.body.getAttribute('data-hide-branding');
+    const hideBranding = hideBrandingRaw === '1' || hideBrandingRaw === 1 || hideBrandingRaw === true;
+
+    // Exibir pontuação
+    const showScoreRaw = document.body.getAttribute('data-show-score');
+    const showScore = showScoreRaw === '1' || showScoreRaw === 1 || showScoreRaw === true;
+
     // Calcular desconto
     const discount = anchorPrice > 0 && promoPrice > 0 ? Math.round(((anchorPrice - promoPrice) / anchorPrice) * 100) : 0;
 
-    let html = `
-        <div class="text-center fade-in max-w-2xl mx-auto">
+    let htmlContent = `
+        <div class="text-center fade-in">
             <!-- Badge de Desconto (se houver) -->
             ${discount > 0 ? `
                 <div class="inline-block mb-4 px-4 py-2 rounded-full font-bold text-white text-lg animate-pulse"
@@ -112,70 +123,114 @@ function generateOfferMessage(score = null) {
                 </div>
             ` : ''}
 
-            <!-- Título -->
-            <h2 class="text-4xl md:text-5xl font-bold mb-4" style="color: ${textColor};">
-                ${offerTitle}
-            </h2>
-
-            <!-- Descrição -->
-            ${offerDescription ? `
-                <p class="text-lg md:text-xl mb-8 opacity-80" style="color: ${textColor};">
-                    ${offerDescription}
-                </p>
-            ` : ''}
-
-            <!-- Preços -->
-            <div class="mb-8">
-                ${anchorPrice > 0 ? `
-                    <div class="text-2xl line-through opacity-50 mb-2" style="color: ${textColor};">
-                        R$ ${anchorPrice.toFixed(2).replace('.', ',')}
-                    </div>
-                ` : ''}
-
-                ${promoPrice > 0 ? `
-                    <div class="flex items-center justify-center gap-2 mb-2">
-                        <span class="text-3xl md:text-4xl font-normal" style="color: ${textColor};">R$</span>
-                        <span class="text-6xl md:text-7xl font-bold" style="color: ${primaryColor};">
-                            ${Math.floor(promoPrice)}
-                        </span>
-                        ${(promoPrice % 1) > 0 ? `
-                            <span class="text-3xl md:text-4xl font-normal" style="color: ${textColor};">
-                                ,${((promoPrice % 1) * 100).toFixed(0).padStart(2, '0')}
-                            </span>
-                        ` : ''}
-                    </div>
-                ` : ''}
+            <!-- Ícone/Animação ou Score -->
+            <div class="inline-flex items-center justify-center mb-6" style="width: 120px; height: 120px;">
+                ${showScore && score !== null && score !== undefined ?
+                    `<div class="w-20 h-20 rounded-full flex items-center justify-center" style="background-color: ${primaryColor};">
+                        <span class="text-4xl font-bold" style="color: ${buttonTextColor};">${score}</span>
+                    </div>` :
+                    `<div id="lottie-success" style="width: 120px; height: 120px;"></div>`
+                }
             </div>
 
-            <!-- Gatilho de Escassez -->
-            ${scarcityText ? `
-                <div class="inline-block mb-6 px-6 py-3 rounded-lg bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-800 dark:text-red-300 font-semibold text-lg">
-                    ${scarcityText}
+            <!-- Score text (se mostrar pontuação) -->
+            ${showScore && score !== null && score !== undefined ?
+                `<p class="text-lg mb-4" style="color: ${primaryColor}; font-weight: 600;">Você fez ${score} ponto${score !== 1 ? 's' : ''}!</p>` :
+                ''
+            }
+
+            <!-- Título -->
+            <h2 class="text-4xl font-bold text-gray-900 mb-3">${successTitle}</h2>
+
+            <!-- Descrição -->
+            <p class="text-xl text-gray-600 mb-6">${successDescription}</p>
+
+            <!-- Preços -->
+            ${anchorPrice > 0 || promoPrice > 0 ? `
+                <div class="my-6">
+                    ${anchorPrice > 0 ? `
+                        <div class="text-2xl line-through opacity-50 mb-2 text-gray-500">
+                            R$ ${anchorPrice.toFixed(2).replace('.', ',')}
+                        </div>
+                    ` : ''}
+
+                    ${promoPrice > 0 ? `
+                        <div class="flex items-center justify-center gap-2 mb-2">
+                            <span class="text-3xl font-normal text-gray-900">R$</span>
+                            <span class="text-6xl font-bold" style="color: ${primaryColor};">
+                                ${Math.floor(promoPrice)}
+                            </span>
+                            ${(promoPrice % 1) > 0 ? `
+                                <span class="text-3xl font-normal text-gray-900">
+                                    ,${((promoPrice % 1) * 100).toFixed(0).padStart(2, '0')}
+                                </span>
+                            ` : ''}
+                        </div>
+                    ` : ''}
                 </div>
             ` : ''}
 
-            <!-- Botão / Redirecionamento -->
-            ${redirectEnabled && redirectUrl ? `
-                ${redirectType === 'button' ? `
-                    <div class="mt-8">
-                        <a href="${redirectUrl}" id="offer-redirect-button"
-                           class="inline-flex items-center gap-3 px-10 py-5 rounded-lg font-bold text-xl transition-all transform hover:scale-105 hover:shadow-2xl"
-                           style="background-color: ${primaryColor}; color: ${buttonTextColor}; border-radius: ${buttonRadius}px;">
-                            ${redirectButtonText}
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                ` : `
-                    <p class="text-sm opacity-60 mt-4 flex items-center justify-center gap-2" style="color: ${textColor};">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Aguarde, você será redirecionado(a)...
-                    </p>
-                `}
+            <!-- Gatilho de Escassez -->
+            ${scarcityText ? `
+                <div class="inline-block mb-6 px-6 py-3 rounded-lg bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-800 dark:text-red-300 font-semibold">
+                    ${scarcityText}
+                </div>
             ` : ''}
-        </div>
     `;
 
-    return html;
+    // Adicionar mensagem de redirecionamento automático
+    if (redirectEnabled && redirectUrl && redirectType === 'automatic') {
+        htmlContent += `
+            <p class="text-sm text-gray-500 mt-4 flex items-center justify-center gap-2">
+                <i class="fas fa-spinner fa-spin"></i>
+                Aguarde, você será redirecionado(a)...
+            </p>
+        `;
+    }
+
+    // Adicionar botão de redirecionamento se ativado e tipo = button
+    if (redirectEnabled && redirectUrl && redirectType === 'button') {
+        htmlContent += `
+            <div class="mt-8">
+                <a href="${redirectUrl}" id="offer-redirect-button"
+                   class="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                   style="background-color: ${primaryColor}; color: ${buttonTextColor}; border-radius: ${buttonRadius}px;">
+                    ${redirectButtonText}
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        `;
+    }
+
+    htmlContent += `</div>`;
+
+    // Adicionar badge Formtalk se não estiver oculto
+    if (!hideBranding) {
+        // Converter cor hex para rgb com opacidade
+        const hexToRgb = (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : {r: 0, g: 0, b: 0};
+        };
+
+        const rgb = hexToRgb(textColor);
+
+        htmlContent += `
+            <div class="mt-12 pt-8 border-t" style="border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1);">
+                <a href="https://formtalk.app" target="_blank" class="inline-flex items-center gap-2 text-sm transition-opacity hover:opacity-70" style="color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4);">
+                    <span>Feito com</span>
+                    <svg width="80" height="16" viewBox="0 0 80 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <text x="0" y="12" font-family="Arial, sans-serif" font-size="12" font-weight="bold">formtalk</text>
+                    </svg>
+                </a>
+            </div>
+        `;
+    }
+
+    return htmlContent;
 }
 
 // ============================================

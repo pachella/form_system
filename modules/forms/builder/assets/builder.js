@@ -628,31 +628,6 @@ function editSuccessMessage() {
                     </p>
                 </div>
 
-                <!-- Título e Descrição da Oferta -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
-                        <i class="fas fa-heading mr-1"></i> Título da Oferta *
-                    </label>
-                    <input type="text"
-                           id="offerTitle"
-                           placeholder="Oferta Especial Para Você!"
-                           value="${offerTitle}"
-                           maxlength="100"
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
-                        <i class="fas fa-align-left mr-1"></i> Descrição da Oferta
-                    </label>
-                    <textarea
-                           id="offerDescription"
-                           placeholder="Aproveite esta oportunidade única..."
-                           rows="3"
-                           maxlength="500"
-                           class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-zinc-700 dark:text-zinc-100">${offerDescription}</textarea>
-                </div>
-
                 <!-- Preços -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -790,16 +765,14 @@ async function updateSuccessMessage(title, description) {
         if (offerModeEnabledEl.checked) {
             const offerLoadingText1El = document.getElementById('offerLoadingText1');
             const offerLoadingText2El = document.getElementById('offerLoadingText2');
-            const offerTitleEl = document.getElementById('offerTitle');
-            const offerDescriptionEl = document.getElementById('offerDescription');
             const offerAnchorPriceEl = document.getElementById('offerAnchorPrice');
             const offerPromoPriceEl = document.getElementById('offerPromoPrice');
             const offerScarcityTextEl = document.getElementById('offerScarcityText');
 
             formData.append('offer_loading_text_1', offerLoadingText1El ? offerLoadingText1El.value : 'Analisando seu perfil...');
             formData.append('offer_loading_text_2', offerLoadingText2El ? offerLoadingText2El.value : 'Procurando a melhor oferta...');
-            formData.append('offer_title', offerTitleEl ? offerTitleEl.value : '');
-            formData.append('offer_description', offerDescriptionEl ? offerDescriptionEl.value : '');
+            formData.append('offer_title', '');
+            formData.append('offer_description', '');
             formData.append('offer_anchor_price', offerAnchorPriceEl ? offerAnchorPriceEl.value : '');
             formData.append('offer_promo_price', offerPromoPriceEl ? offerPromoPriceEl.value : '');
             formData.append('offer_scarcity_text', offerScarcityTextEl ? offerScarcityTextEl.value : '');
@@ -837,8 +810,8 @@ async function updateSuccessMessage(title, description) {
                 if (offerModeEnabledEl.checked) {
                     currentOfferLoadingText1 = document.getElementById('offerLoadingText1')?.value || 'Analisando seu perfil...';
                     currentOfferLoadingText2 = document.getElementById('offerLoadingText2')?.value || 'Procurando a melhor oferta...';
-                    currentOfferTitle = document.getElementById('offerTitle')?.value || '';
-                    currentOfferDescription = document.getElementById('offerDescription')?.value || '';
+                    currentOfferTitle = '';
+                    currentOfferDescription = '';
                     currentOfferAnchorPrice = document.getElementById('offerAnchorPrice')?.value || '';
                     currentOfferPromoPrice = document.getElementById('offerPromoPrice')?.value || '';
                     currentOfferScarcityText = document.getElementById('offerScarcityText')?.value || '';

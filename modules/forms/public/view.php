@@ -420,7 +420,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/css/intlTelInput.css">
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/intlTelInput.min.js"></script>
 
-    <script src="/scripts/js/masks.js?v=11.0.5"></script>
+    <script src="/scripts/js/masks.js?v=11.0.10"></script>
 
     <!-- Fonte personalizada -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -428,7 +428,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <link href="https://fonts.googleapis.com/css2?family=<?= $fontFamilyUrl ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=11.0.5">
+    <link rel="stylesheet" href="/modules/forms/public/assets/styles.css?v=11.0.10">
 
     <style>
         :root {
@@ -896,7 +896,7 @@ $fontFamilyUrl = str_replace(' ', '+', $customization['font_family']);
     <?php endif; ?>
 
     <!-- Scripts -->
-    <script src="/modules/forms/public/assets/scripts.js?v=11.0.5"></script>
+    <script src="/modules/forms/public/assets/scripts.js?v=11.0.10"></script>
 
 </body>
 </html>
