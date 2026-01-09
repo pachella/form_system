@@ -3,7 +3,7 @@ return [
     'name' => 'leads',
     'label' => 'Meus Leads',
     'icon' => 'users',
-    'url' => '/modules/leads/index.php',
+    'url' => '/leads/list',
     'order' => 4,  // Ordem na sidebar (depois de Formulários)
     'roles' => ['admin', 'client']  // Quem pode acessar
 ];
