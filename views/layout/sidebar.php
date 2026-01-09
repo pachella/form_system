@@ -32,7 +32,7 @@ if (PlanService::isFree() && $userFormsCount >= 2) {
 // Criar instância do PermissionManager
 $permissionManager = new PermissionManager(
     $_SESSION['user_role'],
-    $_SESSION['client_id'] ?? null
+    $_SESSION['user_id'] ?? null
 );
 
 $currentPage = $_GET['page'] ?? 'dashboard/home';

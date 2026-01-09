@@ -44,7 +44,14 @@ try {
         $sql .= " LEFT JOIN response_answers ra_search ON ra_search.response_id = fr.id";
     }
 
-    $sql .= " " . str_replace('WHERE', 'WHERE 1=1 AND', $sqlFilter);
+    // Adicionar filtro de permissões
+    if (empty($sqlFilter)) {
+        // Admin - sem filtro adicional
+        $sql .= " WHERE 1=1";
+    } else {
+        // Cliente - adicionar filtro de usuário
+        $sql .= " " . str_replace('WHERE', 'WHERE 1=1 AND', $sqlFilter);
+    }
 
     $params = [];
 
