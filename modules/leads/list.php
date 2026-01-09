@@ -155,6 +155,23 @@ if (!$permissionManager->canViewAllRecords()) {
 }
 $formsStmt->execute();
 $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Função helper para construir URL de paginação
+function buildPaginationUrl($page) {
+    $params = $_GET;
+    $params['p'] = $page;
+    // Garantir que 'page' sempre seja 'leads/list'
+    $params['page'] = 'leads/list';
+    return '?' . http_build_query($params);
+}
+
+// Função helper para construir URL sem paginação
+function buildFilterUrl() {
+    $params = $_GET;
+    unset($params['p']); // Remove paginação ao filtrar
+    $params['page'] = 'leads/list';
+    return '?' . http_build_query($params);
+}
 ?>
 
 <style>
@@ -344,15 +361,8 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
         </table>
     </div>
 
-    <!-- Paginação -->
-    <?php if ($totalPages > 1):
-        // Construir parâmetros base para paginação
-        $baseParams = ['page' => 'leads/list'];
-        if (!empty($filterForm)) $baseParams['form_id'] = $filterForm;
-        if (!empty($filterSearch)) $baseParams['search'] = $filterSearch;
-        if (!empty($filterDateFrom)) $baseParams['date_from'] = $filterDateFrom;
-        if (!empty($filterDateTo)) $baseParams['date_to'] = $filterDateTo;
-    ?>
+    <!-- Paginação CORRIGIDA -->
+    <?php if ($totalPages > 1): ?>
         <div class="bg-gray-50 dark:bg-zinc-900 px-6 py-4 border-t border-gray-200 dark:border-zinc-700">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -360,21 +370,21 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="flex gap-2">
                     <?php if ($currentPage > 1): ?>
-                        <a href="?<?= http_build_query(array_merge($baseParams, ['p' => $currentPage - 1])) ?>"
+                        <a href="<?= buildPaginationUrl($currentPage - 1) ?>"
                            class="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                             <i class="fas fa-chevron-left"></i>
                         </a>
                     <?php endif; ?>
 
                     <?php for ($i = max(1, $currentPage - 2); $i <= min($totalPages, $currentPage + 2); $i++): ?>
-                        <a href="?<?= http_build_query(array_merge($baseParams, ['p' => $i])) ?>"
+                        <a href="<?= buildPaginationUrl($i) ?>"
                            class="px-4 py-2 <?= $i === $currentPage ? 'bg-[#4EA44B] text-white' : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300' ?> border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
 
                     <?php if ($currentPage < $totalPages): ?>
-                        <a href="?<?= http_build_query(array_merge($baseParams, ['p' => $currentPage + 1])) ?>"
+                        <a href="<?= buildPaginationUrl($currentPage + 1) ?>"
                            class="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                             <i class="fas fa-chevron-right"></i>
                         </a>
