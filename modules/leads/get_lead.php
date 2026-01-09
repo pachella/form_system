@@ -30,6 +30,12 @@ try {
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':id', $leadId, PDO::PARAM_INT);
+
+    // Bind user_id if user is client (permission filter adds this parameter)
+    if ($_SESSION['user_role'] === 'client') {
+        $stmt->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    }
+
     $stmt->execute();
     $lead = $stmt->fetch(PDO::FETCH_ASSOC);
 

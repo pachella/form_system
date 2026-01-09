@@ -162,92 +162,6 @@ try {
     </div>
 </div>
 
-<!-- Modal de Detalhes do Lead -->
-<div id="leadModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-zinc-700">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                <i data-feather="user" class="w-6 h-6 mr-2 text-green-600"></i>
-                <span id="modalLeadName">Carregando...</span>
-            </h2>
-            <button onclick="closeLeadModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <i data-feather="x" class="w-6 h-6"></i>
-            </button>
-        </div>
-
-        <div class="p-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Coluna Principal -->
-                <div class="lg:col-span-2 space-y-4">
-                    <!-- Email -->
-                    <div id="modalEmailSection" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            <i data-feather="mail" class="w-4 h-4 inline mr-1"></i> Email
-                        </label>
-                        <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-3">
-                            <p id="modalEmail" class="text-gray-900 dark:text-white"></p>
-                        </div>
-                    </div>
-
-                    <!-- WhatsApp -->
-                    <div id="modalWhatsAppSection" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            <i data-feather="phone" class="w-4 h-4 inline mr-1"></i> WhatsApp
-                        </label>
-                        <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-3">
-                            <p id="modalWhatsApp" class="text-gray-900 dark:text-white"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sidebar Direita -->
-                <div class="space-y-4">
-                    <!-- Informações -->
-                    <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                            <i data-feather="info" class="w-4 h-4 inline mr-1"></i> Informações
-                        </h3>
-                        <div class="space-y-2 text-sm">
-                            <div>
-                                <span class="text-gray-600 dark:text-gray-400">ID:</span>
-                                <span id="modalLeadId" class="text-gray-900 dark:text-white font-medium ml-2"></span>
-                            </div>
-                            <div>
-                                <span class="text-gray-600 dark:text-gray-400">Formulário:</span>
-                                <span id="modalFormTitle" class="text-gray-900 dark:text-white ml-2"></span>
-                            </div>
-                            <div>
-                                <span class="text-gray-600 dark:text-gray-400">Data:</span>
-                                <span id="modalDate" class="text-gray-900 dark:text-white ml-2"></span>
-                            </div>
-                            <div id="modalScoreSection" class="hidden">
-                                <span class="text-gray-600 dark:text-gray-400">Pontuação:</span>
-                                <span id="modalScore" class="text-gray-900 dark:text-white ml-2"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Ações -->
-                    <div class="bg-gray-50 dark:bg-zinc-700 rounded-lg p-4">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                            <i data-feather="zap" class="w-4 h-4 inline mr-1"></i> Ações
-                        </h3>
-                        <div class="space-y-2">
-                            <button id="btnWhatsApp" onclick="openWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 hidden">
-                                <i data-feather="message-circle" class="w-4 h-4"></i>
-                                Chamar no WhatsApp
-                            </button>
-                            <a id="btnViewResponse" href="#" class="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm text-center">
-                                <i data-feather="file-text" class="w-4 h-4 inline mr-1"></i>
-                                Ver Resposta Completa
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <script>
 let currentFilters = {
@@ -322,78 +236,156 @@ async function viewLeadDetails(leadId) {
         const data = await res.json();
 
         if (data.error) {
-            alert(data.error);
+            Swal.fire({
+                title: 'Erro!',
+                text: data.error,
+                icon: 'error'
+            });
             return;
         }
 
         const lead = data.lead;
+        showLeadModal(lead);
 
-        // Preencher modal
-        document.getElementById('modalLeadName').textContent = lead.name;
-        document.getElementById('modalLeadId').textContent = '#' + lead.id;
-        document.getElementById('modalFormTitle').textContent = lead.form_title;
-        document.getElementById('modalDate').textContent = lead.created_at;
-
-        // Email
-        if (lead.email) {
-            document.getElementById('modalEmail').textContent = lead.email;
-            document.getElementById('modalEmailSection').classList.remove('hidden');
-        } else {
-            document.getElementById('modalEmailSection').classList.add('hidden');
-        }
-
-        // WhatsApp
-        if (lead.whatsapp) {
-            document.getElementById('modalWhatsApp').textContent = lead.whatsapp;
-            document.getElementById('modalWhatsAppSection').classList.remove('hidden');
-            document.getElementById('btnWhatsApp').classList.remove('hidden');
-            currentLeadWhatsApp = lead.whatsapp;
-        } else {
-            document.getElementById('modalWhatsAppSection').classList.add('hidden');
-            document.getElementById('btnWhatsApp').classList.add('hidden');
-            currentLeadWhatsApp = '';
-        }
-
-        // Pontuação
-        if (lead.score) {
-            document.getElementById('modalScore').textContent = lead.score;
-            document.getElementById('modalScoreSection').classList.remove('hidden');
-        } else {
-            document.getElementById('modalScoreSection').classList.add('hidden');
-        }
-
-        // Link ver resposta completa
-        document.getElementById('btnViewResponse').href = `/forms/${lead.form_id}/responses/${lead.id}`;
-
-        // Abrir modal
-        document.getElementById('leadModal').classList.remove('hidden');
-
-        if (typeof feather !== 'undefined') {
-            feather.replace();
-        }
     } catch (error) {
         console.error('Erro ao carregar lead:', error);
-        alert('Erro ao carregar detalhes do lead');
+        Swal.fire({
+            title: 'Erro!',
+            text: 'Erro ao carregar detalhes do lead',
+            icon: 'error'
+        });
     }
 }
 
-// Fechar modal
-function closeLeadModal() {
-    document.getElementById('leadModal').classList.add('hidden');
-}
+// Modal de Detalhes do Lead
+function showLeadModal(lead) {
+    const isDark = document.documentElement.classList.contains('dark');
+    const classes = getThemeClasses();
 
-// Abrir WhatsApp
-function openWhatsApp() {
-    if (currentLeadWhatsApp) {
+    // Construir seções condicionais
+    let emailSection = '';
+    if (lead.email) {
+        emailSection = `
+            <div>
+                <label class="block text-sm font-medium ${classes.text} mb-1">
+                    <i data-feather="mail" class="w-4 h-4 inline mr-1"></i> Email
+                </label>
+                <div class="${classes.bg} rounded-lg p-3">
+                    <p class="${classes.title}">${lead.email}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    let whatsappSection = '';
+    let whatsappButton = '';
+    if (lead.whatsapp) {
+        whatsappSection = `
+            <div>
+                <label class="block text-sm font-medium ${classes.text} mb-1">
+                    <i data-feather="phone" class="w-4 h-4 inline mr-1"></i> WhatsApp
+                </label>
+                <div class="${classes.bg} rounded-lg p-3">
+                    <p class="${classes.title}">${lead.whatsapp}</p>
+                </div>
+            </div>
+        `;
+
         const message = encodeURIComponent('Olá! Vi sua resposta no formulário e gostaria de conversar.');
-        window.open(`https://wa.me/${currentLeadWhatsApp}?text=${message}`, '_blank');
+        whatsappButton = `
+            <a href="https://wa.me/${lead.whatsapp}?text=${message}" target="_blank"
+               class="w-full inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors text-sm text-center">
+                <i data-feather="message-circle" class="w-4 h-4 inline mr-1"></i>
+                Chamar no WhatsApp
+            </a>
+        `;
     }
-}
 
-// Fechar modal ao clicar fora
-document.getElementById('leadModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeLeadModal();
+    let scoreSection = '';
+    if (lead.score) {
+        scoreSection = `
+            <div>
+                <span class="${classes.textMuted}">Pontuação:</span>
+                <span class="${classes.title} ml-2">${lead.score}</span>
+            </div>
+        `;
     }
-});
+
+    const leadContent = `
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Coluna Principal -->
+            <div class="lg:col-span-2 space-y-4">
+                ${emailSection}
+                ${whatsappSection}
+            </div>
+
+            <!-- Sidebar Direita -->
+            <div class="space-y-4">
+                <!-- Informações -->
+                <div class="${classes.bg} rounded-lg p-4">
+                    <h3 class="text-sm font-semibold ${classes.title} mb-3">
+                        <i data-feather="info" class="w-4 h-4 inline mr-1"></i> Informações
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <div>
+                            <span class="${classes.textMuted}">ID:</span>
+                            <span class="${classes.title} font-medium ml-2">#${lead.id}</span>
+                        </div>
+                        <div>
+                            <span class="${classes.textMuted}">Formulário:</span>
+                            <span class="${classes.title} ml-2">${lead.form_title}</span>
+                        </div>
+                        <div>
+                            <span class="${classes.textMuted}">Data:</span>
+                            <span class="${classes.title} ml-2">${lead.created_at}</span>
+                        </div>
+                        ${scoreSection}
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="${classes.bg} rounded-lg p-4">
+                    <h3 class="text-sm font-semibold ${classes.title} mb-3">
+                        <i data-feather="zap" class="w-4 h-4 inline mr-1"></i> Ações
+                    </h3>
+                    <div class="space-y-2">
+                        ${whatsappButton}
+                        <a href="/forms/${lead.form_id}/responses/${lead.id}"
+                           class="block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors text-sm text-center">
+                            <i data-feather="file-text" class="w-4 h-4 inline mr-1"></i>
+                            Ver Resposta Completa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const footerRight = `
+        <button type="button" onclick="Swal.close()"
+                class="text-sm ${isDark ? 'text-zinc-400 hover:text-zinc-100' : 'text-gray-600 hover:text-gray-900'} transition-colors">
+            Fechar
+        </button>
+    `;
+
+    Swal.fire({
+        html: createFormModal({
+            title: `<i data-feather="user" class="w-5 h-5 inline mr-2 text-green-600"></i> ${lead.name}`,
+            content: leadContent,
+            footer: {
+                left: '',
+                right: footerRight
+            }
+        }),
+        width: window.innerWidth < 1024 ? '95%' : '900px',
+        showConfirmButton: false,
+        showCancelButton: false,
+        didOpen: () => {
+            // Reinicializar ícones feather
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }
+    });
+}
 </script>
