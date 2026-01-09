@@ -184,11 +184,11 @@ try {
     }
     
     $pdo->beginTransaction();
-    
-    // Criar registro de resposta
+
+    // Criar registro de resposta (score será atualizado depois)
     $responseStmt = $pdo->prepare("
-        INSERT INTO form_responses (form_id, respondent_name, respondent_email, user_data, created_at) 
-        VALUES (:form_id, NULL, NULL, NULL, NOW())
+        INSERT INTO form_responses (form_id, respondent_name, respondent_email, user_data, score, created_at)
+        VALUES (:form_id, NULL, NULL, NULL, 0, NOW())
     ");
     $responseStmt->execute([':form_id' => $form_id]);
     $responseId = $pdo->lastInsertId();
@@ -260,7 +260,14 @@ try {
             ]);
         }
     }
-    
+
+    // Atualizar score total na resposta
+    $updateScoreStmt = $pdo->prepare("UPDATE form_responses SET score = :score WHERE id = :id");
+    $updateScoreStmt->execute([
+        ':score' => $totalScore,
+        ':id' => $responseId
+    ]);
+
     $pdo->commit();
     
     // ===== INTEGRAÇÕES =====

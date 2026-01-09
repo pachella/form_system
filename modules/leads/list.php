@@ -301,6 +301,16 @@ function showLeadModal(lead) {
         `;
     }
 
+    let scoreSection = '';
+    if (lead.score && lead.score > 0) {
+        scoreSection = `
+            <div>
+                <span class="${classes.textMuted}">Pontuação:</span>
+                <span class="${classes.title} ml-2">${lead.score}</span>
+            </div>
+        `;
+    }
+
     // Seção de Observações
     const notesSection = `
         <div>
@@ -348,6 +358,7 @@ function showLeadModal(lead) {
                             <span class="${classes.textMuted}">Data:</span>
                             <span class="${classes.title} ml-2">${lead.created_at}</span>
                         </div>
+                        ${scoreSection}
                     </div>
                 </div>
 

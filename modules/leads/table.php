@@ -122,6 +122,7 @@ function buildPaginationUrl($page) {
                 <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400">Formulário</th>
                 <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400 hidden md:table-cell">Preview</th>
                 <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400 hidden sm:table-cell">Data</th>
+                <th class="text-center py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400 hidden lg:table-cell">Pontuação</th>
                 <th class="text-right py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400">Ações</th>
             </tr>
         </thead>
@@ -161,6 +162,15 @@ function buildPaginationUrl($page) {
                         <td class="py-3 px-2 text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">
                             <?= date('d/m/Y H:i', strtotime($lead['created_at'])) ?>
                         </td>
+                        <td class="py-3 px-2 text-sm text-center hidden lg:table-cell">
+                            <?php if ($lead['score'] && $lead['score'] > 0): ?>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                    <i data-feather="star" class="w-3 h-3 mr-1"></i> <?= $lead['score'] ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="text-gray-400">-</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="py-3 px-2 text-sm text-right">
                             <div class="flex justify-end gap-2">
                                 <button onclick="viewLeadDetails(<?= $lead['id'] ?>)"
@@ -184,7 +194,7 @@ function buildPaginationUrl($page) {
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="6" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <td colspan="7" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                         <i data-feather="inbox" class="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-600"></i>
                         <p>Nenhum lead encontrado</p>
                     </td>

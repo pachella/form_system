@@ -85,6 +85,7 @@ try {
             'name' => $name ?: 'Sem nome',
             'email' => $email,
             'whatsapp' => $whatsapp,
+            'score' => $lead['score'] ?? 0,
             'created_at' => date('d/m/Y H:i', strtotime($lead['created_at'])),
             'ip_address' => $lead['ip_address'] ?? '',
             'user_agent' => $lead['user_agent'] ?? '',
