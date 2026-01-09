@@ -316,6 +316,22 @@ if ($type === 'vsl'):
                 </p>
             </div>
 
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                    <i class="fas fa-mouse-pointer mr-1"></i> Texto do Botão
+                </label>
+                <input type="text"
+                       name="vsl_button_text"
+                       id="vslButtonText"
+                       value="Continuar"
+                       maxlength="50"
+                       placeholder="Continuar"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100">
+                <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                    <i class="fas fa-info-circle"></i> Personalize o texto do botão de avançar
+                </p>
+            </div>
+
             <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg">
                 <p class="text-xs text-indigo-700 dark:text-indigo-300">
                     <i class="fas fa-lightbulb mr-1"></i>

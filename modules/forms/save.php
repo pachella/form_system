@@ -72,6 +72,47 @@ try {
 
         $formId = $pdo->lastInsertId();
 
+        // Criar campos padrão (Nome, Email, Telefone)
+        $defaultFields = [
+            [
+                'label' => 'Nome',
+                'type' => 'name',
+                'placeholder' => 'Digite seu nome completo',
+                'order' => 1,
+                'required' => 1
+            ],
+            [
+                'label' => 'E-mail',
+                'type' => 'email',
+                'placeholder' => 'Digite seu e-mail',
+                'order' => 2,
+                'required' => 1
+            ],
+            [
+                'label' => 'Telefone',
+                'type' => 'phone',
+                'placeholder' => '(00) 00000-0000',
+                'order' => 3,
+                'required' => 1
+            ]
+        ];
+
+        $fieldStmt = $pdo->prepare("
+            INSERT INTO form_fields (form_id, label, type, placeholder, order_index, required)
+            VALUES (:form_id, :label, :type, :placeholder, :order_index, :required)
+        ");
+
+        foreach ($defaultFields as $field) {
+            $fieldStmt->execute([
+                ':form_id' => $formId,
+                ':label' => $field['label'],
+                ':type' => $field['type'],
+                ':placeholder' => $field['placeholder'],
+                ':order_index' => $field['order'],
+                ':required' => $field['required']
+            ]);
+        }
+
         $pdo->commit();
         echo "success:" . $formId;
         

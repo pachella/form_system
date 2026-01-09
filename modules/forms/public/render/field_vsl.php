@@ -3,6 +3,7 @@
 $config = json_decode($field['config'] ?? '{}', true);
 $videoUrl = $config['video_url'] ?? '';
 $waitTime = intval($config['wait_time'] ?? 0);
+$buttonText = $config['button_text'] ?? 'Continuar';
 
 // Processar URL do vídeo
 $embedUrl = '';
@@ -49,6 +50,7 @@ $vslId = 'vsl-' . $field['id'];
 (function() {
     const vslId = '<?= $vslId ?>';
     const waitTime = <?= $waitTime ?>;
+    const buttonText = <?= json_encode($buttonText) ?>;
 
     console.log('🎬 VSL iniciando:', vslId, 'Wait time:', waitTime);
 
@@ -130,8 +132,8 @@ $vslId = 'vsl-' . $field['id'];
                 button.disabled = false;
                 button.classList.remove('opacity-50', 'cursor-not-allowed');
 
-                // Restaurar texto original
-                button.innerHTML = originalButtonHTML;
+                // Usar texto customizado
+                button.innerHTML = buttonText;
 
                 console.log('✅ VSL liberado, botão habilitado');
             }

@@ -985,9 +985,11 @@ async function editField(fieldId) {
                     setTimeout(() => {
                         const vslVideoUrl = document.getElementById('vslVideoUrl');
                         const vslWaitTime = document.getElementById('vslWaitTime');
+                        const vslButtonText = document.getElementById('vslButtonText');
 
                         if(vslVideoUrl) vslVideoUrl.value = config.video_url || '';
                         if(vslWaitTime) vslWaitTime.value = config.wait_time || 0;
+                        if(vslButtonText) vslButtonText.value = config.button_text || 'Continuar';
                     }, 50);
                 }
 

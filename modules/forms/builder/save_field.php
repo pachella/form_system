@@ -97,6 +97,7 @@ try {
     if ($type === 'vsl') {
         $config['video_url'] = trim($_POST['vsl_video_url'] ?? '');
         $config['wait_time'] = intval($_POST['vsl_wait_time'] ?? 0);
+        $config['button_text'] = trim($_POST['vsl_button_text'] ?? 'Continuar');
     }
 
     // Loading config
