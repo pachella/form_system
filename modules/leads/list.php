@@ -12,9 +12,9 @@ if (!isset($_SESSION["user_id"])) {
 $permissionManager = $GLOBALS['permissionManager'] ?? new PermissionManager($_SESSION['user_role'], $_SESSION['client_id'] ?? null);
 
 // Parâmetros de filtro e paginação
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
 $perPage = 20;
-$offset = ($page - 1) * $perPage;
+$offset = ($currentPage - 1) * $perPage;
 
 $filterForm = $_GET['form_id'] ?? '';
 $filterSearch = $_GET['search'] ?? '';
@@ -127,7 +127,7 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">Gerencie todos os leads capturados pelos seus formulários</p>
         </div>
-        <a href="export.php?<?= http_build_query($_GET) ?>"
+        <a href="/modules/leads/export.php?<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>"
            class="bg-[#4EA44B] hover:bg-[#5dcf91] text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
             <i class="fas fa-download"></i> Exportar CSV
         </a>
@@ -175,6 +175,7 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- Filtros -->
     <div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700 p-4 mb-6">
         <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="hidden" name="page" value="leads/list">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Formulário</label>
                 <select name="form_id" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white">
@@ -210,7 +211,7 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
                 <button type="submit" class="bg-[#4EA44B] hover:bg-[#5dcf91] text-white px-6 py-2 rounded-lg transition-colors">
                     <i class="fas fa-filter mr-2"></i> Filtrar
                 </button>
-                <a href="index.php" class="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg transition-colors">
+                <a href="/leads/list" class="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg transition-colors">
                     <i class="fas fa-times mr-2"></i> Limpar
                 </a>
             </div>
@@ -273,11 +274,11 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="view.php?id=<?= $lead['id'] ?>"
+                                    <a href="/modules/leads/view.php?id=<?= $lead['id'] ?>"
                                        class="text-[#4EA44B] hover:text-[#5dcf91] mr-3" title="Ver detalhes">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="../forms/responses/view.php?id=<?= $lead['id'] ?>"
+                                    <a href="/forms/<?= $lead['form_id'] ?>/responses/<?= $lead['id'] ?>"
                                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" title="Ver resposta completa">
                                         <i class="fas fa-file-alt"></i>
                                     </a>
@@ -297,22 +298,22 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
                         Mostrando <?= min($offset + 1, $totalRecords) ?> a <?= min($offset + $perPage, $totalRecords) ?> de <?= $totalRecords ?> leads
                     </div>
                     <div class="flex gap-2">
-                        <?php if ($page > 1): ?>
-                            <a href="?page=<?= $page - 1 ?>&<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>"
+                        <?php if ($currentPage > 1): ?>
+                            <a href="?page=leads/list&p=<?= $currentPage - 1 ?>&<?= http_build_query(array_diff_key($_GET, ['page' => '', 'p' => ''])) ?>"
                                class="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                                 <i class="fas fa-chevron-left"></i>
                             </a>
                         <?php endif; ?>
 
-                        <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                            <a href="?page=<?= $i ?>&<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>"
-                               class="px-4 py-2 <?= $i === $page ? 'bg-[#4EA44B] text-white' : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300' ?> border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
+                        <?php for ($i = max(1, $currentPage - 2); $i <= min($totalPages, $currentPage + 2); $i++): ?>
+                            <a href="?page=leads/list&p=<?= $i ?>&<?= http_build_query(array_diff_key($_GET, ['page' => '', 'p' => ''])) ?>"
+                               class="px-4 py-2 <?= $i === $currentPage ? 'bg-[#4EA44B] text-white' : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300' ?> border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>
 
-                        <?php if ($page < $totalPages): ?>
-                            <a href="?page=<?= $page + 1 ?>&<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>"
+                        <?php if ($currentPage < $totalPages): ?>
+                            <a href="?page=leads/list&p=<?= $currentPage + 1 ?>&<?= http_build_query(array_diff_key($_GET, ['page' => '', 'p' => ''])) ?>"
                                class="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
                                 <i class="fas fa-chevron-right"></i>
                             </a>
