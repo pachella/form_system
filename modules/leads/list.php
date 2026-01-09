@@ -1,14 +1,15 @@
 <?php
-session_start();
+// Este arquivo é carregado via dashboard.php, então session e db já estão disponíveis
 require_once(__DIR__ . "/../../core/db.php");
-require_once(__DIR__ . "/../../core/PermissionManager.php");
 
+// Verificar se está logado
 if (!isset($_SESSION["user_id"])) {
-    header("Location: /auth/login");
-    exit;
+    echo '<div class="p-6"><div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Acesso negado</div></div>';
+    return;
 }
 
-$permissionManager = new PermissionManager($_SESSION['user_role'], $_SESSION['user_id'] ?? null);
+// Usar o permissionManager global ou criar novo
+$permissionManager = $GLOBALS['permissionManager'] ?? new PermissionManager($_SESSION['user_role'], $_SESSION['client_id'] ?? null);
 
 // Parâmetros de filtro e paginação
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
@@ -106,9 +107,6 @@ if (!$permissionManager->canViewAllRecords()) {
 }
 $formsStmt->execute();
 $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
-
-require_once __DIR__ . '/../../views/layout/header.php';
-require_once __DIR__ . '/../forms/builder/builder_sidebar.php';
 ?>
 
 <style>
@@ -325,5 +323,3 @@ require_once __DIR__ . '/../forms/builder/builder_sidebar.php';
         <?php endif; ?>
     </div>
 </div>
-
-<?php require_once __DIR__ . '/../../views/layout/footer.php'; ?>
