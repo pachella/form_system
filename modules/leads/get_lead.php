@@ -25,17 +25,19 @@ try {
     // Buscar dados do lead
     $sql = "SELECT fr.*, f.title as form_title, f.id as form_id
             FROM form_responses fr
-            INNER JOIN forms f ON fr.form_id = f.id
-            " . str_replace('WHERE', 'WHERE fr.id = :id AND', $sqlFilter);
+            INNER JOIN forms f ON fr.form_id = f.id";
+
+    // Adicionar filtro de ID e permissões
+    if (empty($sqlFilter)) {
+        // Admin - apenas filtrar por ID
+        $sql .= " WHERE fr.id = :id";
+    } else {
+        // Cliente - adicionar ID ao filtro existente
+        $sql .= str_replace('WHERE', 'WHERE fr.id = :id AND', $sqlFilter);
+    }
 
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':id', $leadId, PDO::PARAM_INT);
-
-    // Bind user_id if user is client (permission filter adds this parameter)
-    if ($_SESSION['user_role'] === 'client') {
-        $stmt->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
-    }
-
     $stmt->execute();
     $lead = $stmt->fetch(PDO::FETCH_ASSOC);
 
