@@ -1,13 +1,7 @@
 <?php
-// Este arquivo é carregado via dashboard.php, então session já está disponível
-require_once(__DIR__ . "/../../core/db.php");
-require_once(__DIR__ . "/../../core/PermissionManager.php");
-
-// Verificar se está logado
-if (!isset($_SESSION["user_id"])) {
-    echo '<div class="p-6"><div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Acesso negado</div></div>';
-    return;
-}
+// Buscar dados do banco
+require_once("../core/db.php");
+require_once("../core/PermissionManager.php");
 
 // Criar instância do PermissionManager
 $permissionManager = new PermissionManager(
@@ -25,150 +19,110 @@ $filterSearch = $_GET['search'] ?? '';
 $filterDateFrom = $_GET['date_from'] ?? '';
 $filterDateTo = $_GET['date_to'] ?? '';
 
-// Construir query base
-$sql = "SELECT fr.*, f.title as form_title, f.user_id as form_user_id,
-               (SELECT ra.answer
-                FROM response_answers ra
-                INNER JOIN form_fields ff ON ra.field_id = ff.id
-                WHERE ra.response_id = fr.id
-                ORDER BY ff.order_index ASC
-                LIMIT 1) as first_answer
+try {
+    // Filtro SQL baseado no role
+    $sqlFilter = $permissionManager->getSQLFilter('forms');
+
+    // Buscar estatísticas
+    $stats = [
+        'total' => 0,
+        'today' => 0,
+        'week' => 0
+    ];
+
+    $statsSql = "SELECT
+        COUNT(*) as total,
+        COUNT(CASE WHEN DATE(fr.created_at) = CURDATE() THEN 1 END) as today,
+        COUNT(CASE WHEN DATE(fr.created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as week
         FROM form_responses fr
-        INNER JOIN forms f ON fr.form_id = f.id";
+        INNER JOIN forms f ON fr.form_id = f.id
+        " . str_replace('WHERE', 'WHERE 1=1 AND', $sqlFilter);
 
-// Se houver busca, precisamos fazer JOIN com response_answers
-if (!empty($filterSearch)) {
-    $sql .= " LEFT JOIN response_answers ra_search ON ra_search.response_id = fr.id";
+    $stats = $pdo->query($statsSql)->fetch(PDO::FETCH_ASSOC);
+
+    // Buscar formulários para o filtro
+    $formsSql = "SELECT id, title FROM forms " . $sqlFilter . " ORDER BY title ASC";
+    $forms = $pdo->query($formsSql)->fetchAll(PDO::FETCH_ASSOC);
+
+    // Construir query para leads
+    $sql = "SELECT fr.*, f.title as form_title,
+                   (SELECT ra.answer
+                    FROM response_answers ra
+                    INNER JOIN form_fields ff ON ra.field_id = ff.id
+                    WHERE ra.response_id = fr.id
+                    ORDER BY ff.order_index ASC
+                    LIMIT 1) as first_answer
+            FROM form_responses fr
+            INNER JOIN forms f ON fr.form_id = f.id";
+
+    // Se houver busca, fazer JOIN
+    if (!empty($filterSearch)) {
+        $sql .= " LEFT JOIN response_answers ra_search ON ra_search.response_id = fr.id";
+    }
+
+    $sql .= " " . str_replace('WHERE', 'WHERE 1=1 AND', $sqlFilter);
+
+    $params = [];
+
+    // Filtro por formulário
+    if (!empty($filterForm)) {
+        $sql .= " AND fr.form_id = :form_id";
+        $params[':form_id'] = $filterForm;
+    }
+
+    // Filtro por busca
+    if (!empty($filterSearch)) {
+        $sql .= " AND ra_search.answer LIKE :search";
+        $params[':search'] = '%' . $filterSearch . '%';
+    }
+
+    // Filtro por data
+    if (!empty($filterDateFrom)) {
+        $sql .= " AND DATE(fr.created_at) >= :date_from";
+        $params[':date_from'] = $filterDateFrom;
+    }
+    if (!empty($filterDateTo)) {
+        $sql .= " AND DATE(fr.created_at) <= :date_to";
+        $params[':date_to'] = $filterDateTo;
+    }
+
+    // Se houver busca, agrupar
+    if (!empty($filterSearch)) {
+        $sql .= " GROUP BY fr.id";
+    }
+
+    // Contar total de registros
+    $countSql = str_replace("SELECT fr.*, f.title as form_title", "SELECT COUNT(DISTINCT fr.id) as total", $sql);
+    $countSql = preg_replace('/,\s*\(SELECT.*?\) as first_answer/', '', $countSql);
+
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($params);
+    $totalRecords = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+    $totalPages = ceil($totalRecords / $perPage);
+
+    // Buscar registros paginados
+    $sql .= " ORDER BY fr.created_at DESC LIMIT :limit OFFSET :offset";
+    $stmt = $pdo->prepare($sql);
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value);
+    }
+    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $leads = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    $stats = ['total' => 0, 'today' => 0, 'week' => 0];
+    $forms = [];
+    $leads = [];
+    $totalRecords = 0;
+    $totalPages = 0;
 }
-
-$sql .= " WHERE 1=1";
-
-$params = [];
-
-// Filtro de permissão
-if (!$permissionManager->canViewAllRecords()) {
-    $sql .= " AND f.user_id = :user_id";
-    $params[':user_id'] = $_SESSION['user_id'];
-}
-
-// Filtro por formulário
-if (!empty($filterForm)) {
-    $sql .= " AND fr.form_id = :form_id";
-    $params[':form_id'] = $filterForm;
-}
-
-// Filtro por busca (buscar nas respostas)
-if (!empty($filterSearch)) {
-    $sql .= " AND ra_search.answer LIKE :search";
-    $params[':search'] = '%' . $filterSearch . '%';
-}
-
-// Filtro por data
-if (!empty($filterDateFrom)) {
-    $sql .= " AND DATE(fr.created_at) >= :date_from";
-    $params[':date_from'] = $filterDateFrom;
-}
-if (!empty($filterDateTo)) {
-    $sql .= " AND DATE(fr.created_at) <= :date_to";
-    $params[':date_to'] = $filterDateTo;
-}
-
-// Contar total de registros (usando a mesma query base)
-$countSql = "SELECT COUNT(DISTINCT fr.id) as total
-        FROM form_responses fr
-        INNER JOIN forms f ON fr.form_id = f.id";
-
-// Se houver busca, precisamos fazer JOIN
-if (!empty($filterSearch)) {
-    $countSql .= " LEFT JOIN response_answers ra_search ON ra_search.response_id = fr.id";
-}
-
-$countSql .= " WHERE 1=1";
-
-// Aplicar os mesmos filtros
-if (!$permissionManager->canViewAllRecords()) {
-    $countSql .= " AND f.user_id = :user_id";
-}
-if (!empty($filterForm)) {
-    $countSql .= " AND fr.form_id = :form_id";
-}
-if (!empty($filterSearch)) {
-    $countSql .= " AND ra_search.answer LIKE :search";
-}
-if (!empty($filterDateFrom)) {
-    $countSql .= " AND DATE(fr.created_at) >= :date_from";
-}
-if (!empty($filterDateTo)) {
-    $countSql .= " AND DATE(fr.created_at) <= :date_to";
-}
-
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params);
-$totalRecords = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
-$totalPages = ceil($totalRecords / $perPage);
-
-// Se houver busca, agrupar para evitar duplicatas
-if (!empty($filterSearch)) {
-    $sql .= " GROUP BY fr.id";
-}
-
-// Buscar registros paginados
-$sql .= " ORDER BY fr.created_at DESC LIMIT :limit OFFSET :offset";
-$stmt = $pdo->prepare($sql);
-foreach ($params as $key => $value) {
-    $stmt->bindValue($key, $value);
-}
-$stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$leads = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Buscar estatísticas
-$statsSql = "SELECT
-    COUNT(*) as total,
-    COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) as today,
-    COUNT(CASE WHEN DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 END) as week
-    FROM form_responses fr
-    INNER JOIN forms f ON fr.form_id = f.id";
-
-if (!$permissionManager->canViewAllRecords()) {
-    $statsSql .= " WHERE f.user_id = :user_id";
-}
-
-$statsStmt = $pdo->prepare($statsSql);
-if (!$permissionManager->canViewAllRecords()) {
-    $statsStmt->bindValue(':user_id', $_SESSION['user_id']);
-}
-$statsStmt->execute();
-$stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
-
-// Buscar formulários para o filtro
-$formsSql = "SELECT id, title FROM forms WHERE 1=1";
-if (!$permissionManager->canViewAllRecords()) {
-    $formsSql .= " AND user_id = :user_id";
-}
-$formsSql .= " ORDER BY title ASC";
-
-$formsStmt = $pdo->prepare($formsSql);
-if (!$permissionManager->canViewAllRecords()) {
-    $formsStmt->bindValue(':user_id', $_SESSION['user_id']);
-}
-$formsStmt->execute();
-$forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Função helper para construir URL de paginação
 function buildPaginationUrl($page) {
     $params = $_GET;
     $params['p'] = $page;
-    // Garantir que 'page' sempre seja 'leads/list'
-    $params['page'] = 'leads/list';
-    return '?' . http_build_query($params);
-}
-
-// Função helper para construir URL sem paginação
-function buildFilterUrl() {
-    $params = $_GET;
-    unset($params['p']); // Remove paginação ao filtrar
     $params['page'] = 'leads/list';
     return '?' . http_build_query($params);
 }
@@ -183,214 +137,221 @@ function buildFilterUrl() {
     }
 </style>
 
-<!-- Cabeçalho -->
-<div class="flex items-center justify-between mb-6">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            <i class="fas fa-users text-[#4EA44B]"></i> Meus Leads
-        </h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1">Gerencie todos os leads capturados pelos seus formulários</p>
+<div class="w-full max-w-full overflow-x-hidden">
+    <!-- Cabeçalho -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-2">
+        <div>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                <i data-feather="users" class="w-6 h-6 inline text-green-600"></i> Meus Leads
+            </h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Gerencie todos os leads capturados pelos seus formulários
+            </p>
+        </div>
+        <a href="/modules/leads/export.php?<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>"
+           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+            <i data-feather="download" class="w-4 h-4"></i> Exportar CSV
+        </a>
     </div>
-    <a href="/modules/leads/export.php?<?= http_build_query(array_diff_key($_GET, ['page' => ''])) ?>"
-       class="bg-[#4EA44B] hover:bg-[#5dcf91] text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-        <i class="fas fa-download"></i> Exportar CSV
-    </a>
-</div>
 
-<!-- Cards de Estatísticas -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <div class="stat-card bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-zinc-700">
-        <div class="flex items-center justify-between">
+    <!-- Cards de estatísticas -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="stat-card bg-white dark:bg-zinc-800 shadow rounded-lg p-4 border-l-4 border-blue-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total de Leads</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100"><?= number_format($stats['total']) ?></p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <i data-feather="users" class="w-6 h-6 text-blue-600 dark:text-blue-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card bg-white dark:bg-zinc-800 shadow rounded-lg p-4 border-l-4 border-green-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Novos Hoje</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100"><?= number_format($stats['today']) ?></p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                    <i data-feather="user-plus" class="w-6 h-6 text-green-600 dark:text-green-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card bg-white dark:bg-zinc-800 shadow rounded-lg p-4 border-l-4 border-purple-500">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Últimos 7 Dias</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100"><?= number_format($stats['week']) ?></p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                    <i data-feather="trending-up" class="w-6 h-6 text-purple-600 dark:text-purple-300"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white dark:bg-zinc-800 shadow rounded-lg p-4 mb-6">
+        <form method="GET" action="/index.php" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <input type="hidden" name="page" value="leads/list">
             <div>
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Leads</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><?= number_format($stats['total']) ?></p>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Formulário</label>
+                <select name="form_id" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white text-sm">
+                    <option value="">Todos os formulários</option>
+                    <?php foreach ($forms as $form): ?>
+                        <option value="<?= $form['id'] ?>" <?= $filterForm == $form['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($form['title']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
             </div>
-            <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <i class="fas fa-users text-2xl text-blue-600 dark:text-blue-400"></i>
-            </div>
-        </div>
-    </div>
 
-    <div class="stat-card bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-zinc-700">
-        <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Novos Hoje</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><?= number_format($stats['today']) ?></p>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
+                <input type="text" name="search" value="<?= htmlspecialchars($filterSearch) ?>"
+                       placeholder="Nome, email..."
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white text-sm">
             </div>
-            <div class="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <i class="fas fa-user-plus text-2xl text-green-600 dark:text-green-400"></i>
-            </div>
-        </div>
-    </div>
 
-    <div class="stat-card bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-zinc-700">
-        <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Últimos 7 Dias</p>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2"><?= number_format($stats['week']) ?></p>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
+                <input type="date" name="date_from" value="<?= htmlspecialchars($filterDateFrom) ?>"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white text-sm">
             </div>
-            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                <i class="fas fa-chart-line text-2xl text-purple-600 dark:text-purple-400"></i>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
+                <input type="date" name="date_to" value="<?= htmlspecialchars($filterDateTo) ?>"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white text-sm">
             </div>
-        </div>
+
+            <div class="sm:col-span-2 lg:col-span-4 flex gap-2">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors text-sm">
+                    <i data-feather="filter" class="w-4 h-4 inline mr-1"></i> Filtrar
+                </button>
+                <a href="?page=leads/list" class="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg transition-colors text-sm">
+                    <i data-feather="x" class="w-4 h-4 inline mr-1"></i> Limpar
+                </a>
+            </div>
+        </form>
     </div>
-</div>
 
-<!-- Filtros -->
-<div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700 p-4 mb-6">
-    <form method="GET" action="/index.php" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input type="hidden" name="page" value="leads/list">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Formulário</label>
-            <select name="form_id" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white">
-                <option value="">Todos os formulários</option>
-                <?php foreach ($forms as $form): ?>
-                    <option value="<?= $form['id'] ?>" <?= $filterForm == $form['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($form['title']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar</label>
-            <input type="text" name="search" value="<?= htmlspecialchars($filterSearch) ?>"
-                   placeholder="Nome, email..."
-                   class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Início</label>
-            <input type="date" name="date_from" value="<?= htmlspecialchars($filterDateFrom) ?>"
-                   class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white">
-        </div>
-
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Fim</label>
-            <input type="date" name="date_to" value="<?= htmlspecialchars($filterDateTo) ?>"
-                   class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white">
-        </div>
-
-        <div class="md:col-span-4 flex gap-2">
-            <button type="submit" class="bg-[#4EA44B] hover:bg-[#5dcf91] text-white px-6 py-2 rounded-lg transition-colors">
-                <i class="fas fa-filter mr-2"></i> Filtrar
-            </button>
-            <a href="?page=leads/list" class="bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg transition-colors">
-                <i class="fas fa-times mr-2"></i> Limpar
-            </a>
-        </div>
-    </form>
-</div>
-
-<!-- Tabela de Leads -->
-<div class="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700 overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-700">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Formulário</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Preview</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pontuação</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
-                <?php if (empty($leads)): ?>
+    <!-- Tabela de Leads -->
+    <div class="bg-white dark:bg-zinc-800 shadow rounded-lg p-4">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+            <i data-feather="list" class="w-5 h-5 mr-2"></i>
+            Todos os Leads
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-full">
+                <thead class="border-b border-gray-200 dark:border-zinc-700">
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-inbox text-4xl mb-3 opacity-50"></i>
-                            <p>Nenhum lead encontrado</p>
-                        </td>
+                        <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400">ID</th>
+                        <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400">Formulário</th>
+                        <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400 hidden md:table-cell">Preview</th>
+                        <th class="text-left py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400 hidden sm:table-cell">Data</th>
+                        <th class="text-center py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400 hidden lg:table-cell">Pontuação</th>
+                        <th class="text-right py-2 px-2 text-sm font-medium text-gray-500 dark:text-gray-400">Ações</th>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($leads as $lead):
-                        // Pegar primeira resposta da subquery
-                        $firstAnswer = $lead['first_answer'] ?? 'Sem resposta';
-                        // Se for array JSON, decodificar
-                        if (is_string($firstAnswer) && (substr($firstAnswer, 0, 1) === '[' || substr($firstAnswer, 0, 1) === '{')) {
-                            $decoded = json_decode($firstAnswer, true);
-                            if (is_array($decoded)) {
-                                $firstAnswer = implode(', ', $decoded);
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
+                    <?php if ($leads): ?>
+                        <?php foreach ($leads as $lead):
+                            $firstAnswer = $lead['first_answer'] ?? 'Sem resposta';
+                            if (is_string($firstAnswer) && (substr($firstAnswer, 0, 1) === '[' || substr($firstAnswer, 0, 1) === '{')) {
+                                $decoded = json_decode($firstAnswer, true);
+                                if (is_array($decoded)) {
+                                    $firstAnswer = implode(', ', $decoded);
+                                }
                             }
-                        }
-                        // Truncar se muito longo
-                        if (strlen($firstAnswer) > 50) {
-                            $firstAnswer = substr($firstAnswer, 0, 50) . '...';
-                        }
-                    ?>
-                        <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">#<?= $lead['id'] ?></span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white"><?= htmlspecialchars($lead['form_title']) ?></div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-600 dark:text-gray-400"><?= htmlspecialchars($firstAnswer) ?></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-600 dark:text-gray-400">
+                            if (strlen($firstAnswer) > 50) {
+                                $firstAnswer = substr($firstAnswer, 0, 50) . '...';
+                            }
+                        ?>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700">
+                                <td class="py-3 px-2 text-sm">
+                                    <span class="font-medium text-gray-900 dark:text-gray-100">#<?= $lead['id'] ?></span>
+                                </td>
+                                <td class="py-3 px-2 text-sm">
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">
+                                        <?= htmlspecialchars($lead['form_title']) ?>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-2 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">
+                                    <?= htmlspecialchars($firstAnswer) ?>
+                                </td>
+                                <td class="py-3 px-2 text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">
                                     <?= date('d/m/Y H:i', strtotime($lead['created_at'])) ?>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <?php if ($lead['score']): ?>
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                                        <i class="fas fa-star text-xs mr-1"></i> <?= $lead['score'] ?>
-                                    </span>
-                                <?php else: ?>
-                                    <span class="text-sm text-gray-400">-</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/modules/leads/view.php?id=<?= $lead['id'] ?>"
-                                   class="text-[#4EA44B] hover:text-[#5dcf91] mr-3" title="Ver detalhes">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="/forms/<?= $lead['form_id'] ?>/responses/<?= $lead['id'] ?>"
-                                   class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300" title="Ver resposta completa">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
+                                </td>
+                                <td class="py-3 px-2 text-sm text-center hidden lg:table-cell">
+                                    <?php if ($lead['score']): ?>
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                            <i data-feather="star" class="w-3 h-3 mr-1"></i> <?= $lead['score'] ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-gray-400">-</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="py-3 px-2 text-sm text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <a href="/modules/leads/view.php?id=<?= $lead['id'] ?>"
+                                           class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                                           title="Ver detalhes">
+                                            <i data-feather="eye" class="w-4 h-4 inline"></i>
+                                        </a>
+                                        <a href="/forms/<?= $lead['form_id'] ?>/responses/<?= $lead['id'] ?>"
+                                           class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                           title="Ver resposta completa">
+                                            <i data-feather="file-text" class="w-4 h-4 inline"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                                <i data-feather="inbox" class="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-600"></i>
+                                <p>Nenhum lead encontrado</p>
                             </td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Paginação CORRIGIDA -->
-    <?php if ($totalPages > 1): ?>
-        <div class="bg-gray-50 dark:bg-zinc-900 px-6 py-4 border-t border-gray-200 dark:border-zinc-700">
-            <div class="flex items-center justify-between">
+        <!-- Paginação -->
+        <?php if ($totalPages > 1): ?>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
                 <div class="text-sm text-gray-600 dark:text-gray-400">
                     Mostrando <?= min($offset + 1, $totalRecords) ?> a <?= min($offset + $perPage, $totalRecords) ?> de <?= $totalRecords ?> leads
                 </div>
                 <div class="flex gap-2">
                     <?php if ($currentPage > 1): ?>
                         <a href="<?= buildPaginationUrl($currentPage - 1) ?>"
-                           class="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
-                            <i class="fas fa-chevron-left"></i>
+                           class="px-3 py-1 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded hover:bg-gray-50 dark:hover:bg-zinc-600 text-sm">
+                            <i data-feather="chevron-left" class="w-4 h-4 inline"></i>
                         </a>
                     <?php endif; ?>
 
                     <?php for ($i = max(1, $currentPage - 2); $i <= min($totalPages, $currentPage + 2); $i++): ?>
                         <a href="<?= buildPaginationUrl($i) ?>"
-                           class="px-4 py-2 <?= $i === $currentPage ? 'bg-[#4EA44B] text-white' : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300' ?> border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
+                           class="px-3 py-1 <?= $i === $currentPage ? 'bg-green-600 text-white' : 'bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-300' ?> border border-gray-300 dark:border-zinc-600 rounded hover:bg-gray-50 dark:hover:bg-zinc-600 text-sm">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
 
                     <?php if ($currentPage < $totalPages): ?>
                         <a href="<?= buildPaginationUrl($currentPage + 1) ?>"
-                           class="px-4 py-2 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors">
-                            <i class="fas fa-chevron-right"></i>
+                           class="px-3 py-1 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded hover:bg-gray-50 dark:hover:bg-zinc-600 text-sm">
+                            <i data-feather="chevron-right" class="w-4 h-4 inline"></i>
                         </a>
                     <?php endif; ?>
                 </div>
             </div>
-        </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
 </div>
