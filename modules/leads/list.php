@@ -1,6 +1,7 @@
 <?php
-// Este arquivo é carregado via dashboard.php, então session e db já estão disponíveis
+// Este arquivo é carregado via dashboard.php, então session já está disponível
 require_once(__DIR__ . "/../../core/db.php");
+require_once(__DIR__ . "/../../core/PermissionManager.php");
 
 // Verificar se está logado
 if (!isset($_SESSION["user_id"])) {
@@ -8,8 +9,11 @@ if (!isset($_SESSION["user_id"])) {
     return;
 }
 
-// Usar o permissionManager global ou criar novo
-$permissionManager = $GLOBALS['permissionManager'] ?? new PermissionManager($_SESSION['user_role'], $_SESSION['client_id'] ?? null);
+// Criar instância do PermissionManager
+$permissionManager = new PermissionManager(
+    $_SESSION['user_role'],
+    $_SESSION['user_id'] ?? null
+);
 
 // Parâmetros de filtro e paginação
 $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
