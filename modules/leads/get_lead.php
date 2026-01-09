@@ -88,7 +88,9 @@ try {
             'score' => $lead['score'],
             'created_at' => date('d/m/Y H:i', strtotime($lead['created_at'])),
             'ip_address' => $lead['ip_address'] ?? '',
-            'user_agent' => $lead['user_agent'] ?? ''
+            'user_agent' => $lead['user_agent'] ?? '',
+            'notes' => $lead['notes'] ?? '',
+            'notes_updated_at' => $lead['notes_updated_at'] ? date('d/m/Y H:i', strtotime($lead['notes_updated_at'])) : null
         ]
     ]);
 

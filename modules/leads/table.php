@@ -183,6 +183,11 @@ function buildPaginationUrl($page) {
                                    title="Ver resposta completa">
                                     <i data-feather="file-text" class="w-4 h-4 inline"></i>
                                 </a>
+                                <button onclick="deleteLead(<?= $lead['id'] ?>)"
+                                   class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                                   title="Excluir lead">
+                                    <i data-feather="trash-2" class="w-4 h-4 inline"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>

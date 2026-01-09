@@ -311,12 +311,31 @@ function showLeadModal(lead) {
         `;
     }
 
+    // Seção de Observações
+    const notesSection = `
+        <div>
+            <label class="block text-sm font-medium ${classes.text} mb-1">
+                <i data-feather="edit-3" class="w-4 h-4 inline mr-1"></i> Observações
+            </label>
+            <textarea id="leadNotes" rows="4"
+                      placeholder="Adicione observações sobre este lead..."
+                      class="w-full px-3 py-2 border ${isDark ? 'border-zinc-600 bg-zinc-700 text-zinc-100 placeholder-zinc-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-green-500 text-sm resize-none">${lead.notes || ''}</textarea>
+            ${lead.notes_updated_at ? `<p class="text-xs ${classes.textMuted} mt-1">Última atualização: ${lead.notes_updated_at}</p>` : ''}
+            <button onclick="saveLeadNotes(${lead.id})"
+                    class="mt-2 w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg transition-colors text-sm">
+                <i data-feather="save" class="w-4 h-4 inline mr-1"></i>
+                Salvar Observações
+            </button>
+        </div>
+    `;
+
     const leadContent = `
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Coluna Principal -->
             <div class="lg:col-span-2 space-y-4">
                 ${emailSection}
                 ${whatsappSection}
+                ${notesSection}
             </div>
 
             <!-- Sidebar Direita -->
@@ -387,5 +406,93 @@ function showLeadModal(lead) {
             }
         }
     });
+}
+
+// Salvar observações do lead
+async function saveLeadNotes(leadId) {
+    const notes = document.getElementById('leadNotes').value;
+
+    try {
+        const formData = new FormData();
+        formData.append('lead_id', leadId);
+        formData.append('notes', notes);
+
+        const res = await fetch('/modules/leads/save_notes.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            Swal.fire({
+                title: 'Sucesso!',
+                text: 'Observações salvas com sucesso',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else {
+            throw new Error(data.error || 'Erro ao salvar observações');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar observações:', error);
+        Swal.fire({
+            title: 'Erro!',
+            text: error.message || 'Erro ao salvar observações',
+            icon: 'error'
+        });
+    }
+}
+
+// Excluir lead
+async function deleteLead(leadId) {
+    const result = await Swal.fire({
+        title: 'Tem certeza?',
+        text: 'Deseja realmente excluir este lead? Esta ação não pode ser desfeita.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const formData = new FormData();
+        formData.append('id', leadId);
+
+        const res = await fetch('/modules/leads/delete.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            await Swal.fire({
+                title: 'Excluído!',
+                text: 'Lead excluído com sucesso.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Recarregar tabela
+            loadLeadsTable(1);
+        } else {
+            throw new Error(data.error || 'Erro ao excluir lead');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir lead:', error);
+        Swal.fire({
+            title: 'Erro!',
+            text: error.message || 'Erro ao excluir lead',
+            icon: 'error'
+        });
+    }
 }
 </script>
