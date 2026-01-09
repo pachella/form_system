@@ -85,5 +85,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    echo json_encode(['error' => 'Erro ao buscar lead']);
+    error_log("Erro get_lead.php: " . $e->getMessage());
+    echo json_encode(['error' => 'Erro ao buscar lead: ' . $e->getMessage()]);
 }

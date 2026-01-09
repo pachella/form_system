@@ -92,6 +92,8 @@ try {
     $leads = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
+    error_log("Erro table.php: " . $e->getMessage());
+    error_log("SQL: " . ($sql ?? 'N/A'));
     $leads = [];
     $totalRecords = 0;
     $totalPages = 0;
