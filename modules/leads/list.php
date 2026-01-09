@@ -26,10 +26,22 @@ $filterDateFrom = $_GET['date_from'] ?? '';
 $filterDateTo = $_GET['date_to'] ?? '';
 
 // Construir query base
-$sql = "SELECT fr.*, f.title as form_title, f.user_id as form_user_id
+$sql = "SELECT fr.*, f.title as form_title, f.user_id as form_user_id,
+               (SELECT ra.answer
+                FROM response_answers ra
+                INNER JOIN form_fields ff ON ra.field_id = ff.id
+                WHERE ra.response_id = fr.id
+                ORDER BY ff.order_index ASC
+                LIMIT 1) as first_answer
         FROM form_responses fr
-        INNER JOIN forms f ON fr.form_id = f.id
-        WHERE 1=1";
+        INNER JOIN forms f ON fr.form_id = f.id";
+
+// Se houver busca, precisamos fazer JOIN com response_answers
+if (!empty($filterSearch)) {
+    $sql .= " LEFT JOIN response_answers ra_search ON ra_search.response_id = fr.id";
+}
+
+$sql .= " WHERE 1=1";
 
 $params = [];
 
@@ -45,9 +57,9 @@ if (!empty($filterForm)) {
     $params[':form_id'] = $filterForm;
 }
 
-// Filtro por busca (nome/email)
+// Filtro por busca (buscar nas respostas)
 if (!empty($filterSearch)) {
-    $sql .= " AND (fr.answers LIKE :search)";
+    $sql .= " AND ra_search.answer LIKE :search";
     $params[':search'] = '%' . $filterSearch . '%';
 }
 
@@ -61,12 +73,44 @@ if (!empty($filterDateTo)) {
     $params[':date_to'] = $filterDateTo;
 }
 
-// Contar total de registros
-$countSql = "SELECT COUNT(*) as total FROM ($sql) as filtered";
+// Contar total de registros (usando a mesma query base)
+$countSql = "SELECT COUNT(DISTINCT fr.id) as total
+        FROM form_responses fr
+        INNER JOIN forms f ON fr.form_id = f.id";
+
+// Se houver busca, precisamos fazer JOIN
+if (!empty($filterSearch)) {
+    $countSql .= " LEFT JOIN response_answers ra_search ON ra_search.response_id = fr.id";
+}
+
+$countSql .= " WHERE 1=1";
+
+// Aplicar os mesmos filtros
+if (!$permissionManager->canViewAllRecords()) {
+    $countSql .= " AND f.user_id = :user_id";
+}
+if (!empty($filterForm)) {
+    $countSql .= " AND fr.form_id = :form_id";
+}
+if (!empty($filterSearch)) {
+    $countSql .= " AND ra_search.answer LIKE :search";
+}
+if (!empty($filterDateFrom)) {
+    $countSql .= " AND DATE(fr.created_at) >= :date_from";
+}
+if (!empty($filterDateTo)) {
+    $countSql .= " AND DATE(fr.created_at) <= :date_to";
+}
+
 $countStmt = $pdo->prepare($countSql);
 $countStmt->execute($params);
 $totalRecords = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
 $totalPages = ceil($totalRecords / $perPage);
+
+// Se houver busca, agrupar para evitar duplicatas
+if (!empty($filterSearch)) {
+    $sql .= " GROUP BY fr.id";
+}
 
 // Buscar registros paginados
 $sql .= " ORDER BY fr.created_at DESC LIMIT :limit OFFSET :offset";
@@ -246,12 +290,19 @@ $forms = $formsStmt->fetchAll(PDO::FETCH_ASSOC);
                         </tr>
                     <?php else: ?>
                         <?php foreach ($leads as $lead):
-                            $answers = json_decode($lead['answers'] ?? '{}', true);
-                            $firstAnswer = !empty($answers) ? array_values($answers)[0] : 'Sem resposta';
-                            if (is_array($firstAnswer)) {
-                                $firstAnswer = implode(', ', $firstAnswer);
+                            // Pegar primeira resposta da subquery
+                            $firstAnswer = $lead['first_answer'] ?? 'Sem resposta';
+                            // Se for array JSON, decodificar
+                            if (is_string($firstAnswer) && (substr($firstAnswer, 0, 1) === '[' || substr($firstAnswer, 0, 1) === '{')) {
+                                $decoded = json_decode($firstAnswer, true);
+                                if (is_array($decoded)) {
+                                    $firstAnswer = implode(', ', $decoded);
+                                }
                             }
-                            $firstAnswer = substr($firstAnswer, 0, 50) . (strlen($firstAnswer) > 50 ? '...' : '');
+                            // Truncar se muito longo
+                            if (strlen($firstAnswer) > 50) {
+                                $firstAnswer = substr($firstAnswer, 0, 50) . '...';
+                            }
                         ?>
                             <tr class="hover:bg-gray-50 dark:hover:bg-zinc-700/50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
