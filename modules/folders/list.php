@@ -232,7 +232,7 @@ function openCreateFolderModal() {
                 <div>
                     <label class="block text-sm font-medium mb-2 ${isDark ? 'text-zinc-100' : 'text-gray-900'}">
                         Cor
-                        ${isFree ? '<span class="ml-2 text-xs px-2 py-0.5 rounded" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
+                        ${isFree ? '<span onclick="window.open(\'https://checkout.ticto.app/OEDEF53ED?name=\' + encodeURIComponent(window.userName) + \'&email=\' + encodeURIComponent(window.userEmail), \'_blank\')" class="ml-2 text-xs px-2 py-0.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
                     </label>
                     <input type="color" id="folderColor" value="#4EA44B" 
                            class="w-full h-10 rounded border ${isFree ? 'cursor-not-allowed' : 'cursor-pointer'}"
@@ -243,7 +243,7 @@ function openCreateFolderModal() {
                 <div>
                     <label class="block text-sm font-medium mb-2 ${isDark ? 'text-zinc-100' : 'text-gray-900'}">
                         Ícone
-                        ${isFree ? '<span class="ml-2 text-xs px-2 py-0.5 rounded" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
+                        ${isFree ? '<span onclick="window.open(\'https://checkout.ticto.app/OEDEF53ED?name=\' + encodeURIComponent(window.userName) + \'&email=\' + encodeURIComponent(window.userEmail), \'_blank\')" class="ml-2 text-xs px-2 py-0.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
                     </label>
                     <input type="hidden" id="folderIcon" value="folder">
                     ${isFree ? '<p class="text-xs text-gray-500 dark:text-zinc-400 mb-2">Ícone pasta padrão (personalize com PRO)</p>' : ''}
@@ -370,18 +370,18 @@ async function editFolder(folderId) {
                     <div>
                         <label class="block text-sm font-medium mb-2 ${isDark ? 'text-zinc-100' : 'text-gray-900'}">
                             Cor
-                            ${isFree ? '<span class="ml-2 text-xs px-2 py-0.5 rounded" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
+                            ${isFree ? '<span onclick="window.open(\'https://checkout.ticto.app/OEDEF53ED?name=\' + encodeURIComponent(window.userName) + \'&email=\' + encodeURIComponent(window.userEmail), \'_blank\')" class="ml-2 text-xs px-2 py-0.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
                         </label>
-                        <input type="color" id="folderColor" value="${folder.color}" 
+                        <input type="color" id="folderColor" value="${folder.color}"
                                class="w-full h-10 rounded border ${isFree ? 'cursor-not-allowed' : 'cursor-pointer'}"
                                ${disabledAttr}>
                         ${isFree ? '<p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">Personalize cores com PRO</p>' : ''}
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-medium mb-2 ${isDark ? 'text-zinc-100' : 'text-gray-900'}">
                             Ícone
-                            ${isFree ? '<span class="ml-2 text-xs px-2 py-0.5 rounded" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
+                            ${isFree ? '<span onclick="window.open(\'https://checkout.ticto.app/OEDEF53ED?name=\' + encodeURIComponent(window.userName) + \'&email=\' + encodeURIComponent(window.userEmail), \'_blank\')" class="ml-2 text-xs px-2 py-0.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity" style="background-color: #4EA44B; color: white;">✨ PRO</span>' : ''}
                         </label>
                         <input type="hidden" id="folderIcon" value="${folder.icon}">
                         ${isFree ? '<p class="text-xs text-gray-500 dark:text-zinc-400 mb-2">Personalize ícones com PRO</p>' : ''}

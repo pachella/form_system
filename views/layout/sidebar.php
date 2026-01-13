@@ -85,11 +85,13 @@ if ($permissionManager->isAdmin()) {
 
   <!-- Logo Section -->
   <div class="p-6 border-b border-gray-200 dark:border-zinc-700">
-    <div class="flex items-center justify-center mb-4">
+    <div class="flex items-center justify-center">
       <img src="/uploads/system/logo.png" alt="Logo" class="h-8 dark:brightness-0 dark:invert">
     </div>
+  </div>
 
-    <!-- Botão Criar Formulário -->
+  <!-- Botão Criar Formulário (após linha horizontal) -->
+  <div class="p-4 pb-2">
     <?php if ($canCreateForm): ?>
       <button id="btnNewFormSidebar" class="w-full text-white px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium bg-green-600 hover:bg-green-700 hover:shadow-lg flex items-center justify-center gap-2">
         <i data-feather="plus" class="w-4 h-4"></i>
@@ -230,6 +232,10 @@ function closeSidebar() {
 
 // Mostrar alerta de upgrade
 function showUpgradeAlert() {
+  // Obter dados do usuário das variáveis globais
+  const userName = typeof USER_NAME !== 'undefined' ? USER_NAME : (typeof window.userName !== 'undefined' ? window.userName : '');
+  const userEmail = typeof USER_EMAIL !== 'undefined' ? USER_EMAIL : (typeof window.userEmail !== 'undefined' ? window.userEmail : '');
+
   Swal.fire({
     title: '✨ Upgrade para PRO',
     html: '<?= $limitMessage ?><br><br>Com o plano PRO você terá:<br>• <strong>Formulários ilimitados</strong><br>• Suporte prioritário<br>• Recursos avançados',
@@ -241,7 +247,9 @@ function showUpgradeAlert() {
     cancelButtonColor: '#6b7280'
   }).then((result) => {
     if (result.isConfirmed) {
-      window.location.href = '/upgrade';
+      // Redirecionar para checkout Ticto com dados pré-populados
+      const checkoutUrl = `https://checkout.ticto.app/OEDEF53ED?name=${encodeURIComponent(userName)}&email=${encodeURIComponent(userEmail)}`;
+      window.open(checkoutUrl, '_blank');
     }
   });
 }

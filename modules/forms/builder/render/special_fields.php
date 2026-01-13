@@ -274,7 +274,7 @@ if ($field['type'] === 'vsl'):
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
                         <h3 class="font-medium text-purple-900 dark:text-purple-100"><?= htmlspecialchars($field['label']) ?: 'VSL (Video Sales Letter)' ?></h3>
-                        <span class="text-xs px-2 py-0.5 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded">✨ PRO</span>
+                        <span onclick="window.open('https://checkout.ticto.app/OEDEF53ED?name=' + encodeURIComponent(window.userName) + '&email=' + encodeURIComponent(window.userEmail), '_blank')" class="text-xs px-2 py-0.5 bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-lg cursor-pointer hover:opacity-80 transition-opacity">✨ PRO</span>
                     </div>
                     <?php if (!empty($field['description'])): ?>
                         <p class="text-sm text-purple-800 dark:text-purple-200 mb-2"><?= htmlspecialchars($field['description']) ?></p>

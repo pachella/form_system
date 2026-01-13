@@ -107,14 +107,12 @@ try {
             (form_id, background_color, text_color, primary_color, button_text_color,
              background_image, logo, button_radius, font_family,
              success_message_title, success_message_description,
-             success_redirect_enabled, success_redirect_url, success_redirect_type, success_bt_redirect,
-             hide_branding)
+             success_redirect_enabled, success_redirect_url, success_redirect_type, success_bt_redirect)
             VALUES
             (:form_id, :background_color, :text_color, :primary_color, :button_text_color,
              :background_image, :logo, :button_radius, :font_family,
              :success_message_title, :success_message_description,
-             :success_redirect_enabled, :success_redirect_url, :success_redirect_type, :success_bt_redirect,
-             :hide_branding)";
+             :success_redirect_enabled, :success_redirect_url, :success_redirect_type, :success_bt_redirect)";
 
         $insertCustomStmt = $pdo->prepare($insertCustomSql);
         $insertCustomStmt->execute([
@@ -132,8 +130,7 @@ try {
             ':success_redirect_enabled' => $customization['success_redirect_enabled'],
             ':success_redirect_url' => $customization['success_redirect_url'],
             ':success_redirect_type' => $customization['success_redirect_type'],
-            ':success_bt_redirect' => $customization['success_bt_redirect'],
-            ':hide_branding' => $customization['hide_branding']
+            ':success_bt_redirect' => $customization['success_bt_redirect']
         ]);
     }
 

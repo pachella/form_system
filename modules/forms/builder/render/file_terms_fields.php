@@ -35,7 +35,7 @@ if (in_array($field['type'], ['file', 'terms'])):
                             <span class="text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded">Obrigatório</span>
                         <?php endif; ?>
                         <?php if ($field['type'] === 'file' && PlanService::isFree()): ?>
-                            <span class="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded">✨ PRO</span>
+                            <span onclick="window.open('https://checkout.ticto.app/OEDEF53ED?name=' + encodeURIComponent(window.userName) + '&email=' + encodeURIComponent(window.userEmail), '_blank')" class="text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity">✨ PRO</span>
                         <?php endif; ?>
                     </div>
                     <?php if (!empty($field['description'])): ?>

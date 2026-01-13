@@ -122,7 +122,7 @@
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-zinc-100 flex items-center gap-2">
                                     <i class="fas fa-lock"></i>Sistema de Bloqueio
                                     <?php if (!PlanService::hasProAccess()): ?>
-                                        <span class="text-xs bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-1 rounded-full font-semibold">✨ PRO</span>
+                                        <span onclick="window.open('https://checkout.ticto.app/OEDEF53ED?name=' + encodeURIComponent(window.userName) + '&email=' + encodeURIComponent(window.userEmail), '_blank')" class="text-xs bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-2 py-1 rounded-lg font-semibold cursor-pointer hover:opacity-80 transition-opacity">✨ PRO</span>
                                     <?php endif; ?>
                                 </h3>
                                 <p class="text-sm text-gray-600 dark:text-zinc-400 mt-1">
