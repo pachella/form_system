@@ -85,9 +85,8 @@ if ($permissionManager->isAdmin()) {
 
   <!-- Logo Section -->
   <div class="p-6 border-b border-gray-200 dark:border-zinc-700">
-    <div class="flex items-center space-x-3 mb-4">
+    <div class="flex items-center justify-center mb-4">
       <img src="/uploads/system/logo.png" alt="Logo" class="h-8 dark:brightness-0 dark:invert">
-      <span class="font-bold text-lg text-gray-800 dark:text-gray-100">FormTalk</span>
     </div>
 
     <!-- Botão Criar Formulário -->
