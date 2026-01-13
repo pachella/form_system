@@ -288,7 +288,7 @@ if ($type === 'message'):
                 <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
                     <i class="fas fa-volume-up mr-1"></i> Tipo de Mensagem
                 </label>
-                <select name="message_type" id="messageType" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100" onchange="toggleAudioConfig()">
+                <select name="message_type" id="messageType" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100">
                     <option value="text">Apenas Texto</option>
                     <option value="audio">Mensagem em Áudio</option>
                 </select>
@@ -364,35 +364,6 @@ if ($type === 'message'):
             </div>
         </div>
     </div>
-
-    <script>
-    function toggleAudioConfig() {
-        const messageType = document.getElementById('messageType').value;
-        const audioSection = document.getElementById('audioConfigSection');
-        if (messageType === 'audio') {
-            audioSection.style.display = 'block';
-        } else {
-            audioSection.style.display = 'none';
-        }
-    }
-
-    // Preview de áudio quando selecionar arquivo
-    document.addEventListener('DOMContentLoaded', function() {
-        const audioFileInput = document.getElementById('messageAudioFile');
-        if (audioFileInput) {
-            audioFileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const preview = document.getElementById('audioPreview');
-                    const player = document.getElementById('audioPreviewPlayer');
-                    const url = URL.createObjectURL(file);
-                    player.src = url;
-                    preview.style.display = 'block';
-                }
-            });
-        }
-    });
-    </script>
 <?php
 endif;
 

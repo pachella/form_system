@@ -189,6 +189,90 @@ function loadFieldConfig(fieldType) {
                         const loadingConfig = document.getElementById('loadingConfig');
                         if(loadingConfig) loadingConfig.style.display = 'block';
                         break;
+                    case 'message':
+                        const messageConfig = document.getElementById('messageConfig');
+                        if(messageConfig) {
+                            messageConfig.style.display = 'block';
+
+                            // Configurar evento do select de tipo de mensagem
+                            const messageTypeSelect = document.getElementById('messageType');
+                            if (messageTypeSelect) {
+                                messageTypeSelect.addEventListener('change', function() {
+                                    const audioSection = document.getElementById('audioConfigSection');
+                                    if (audioSection) {
+                                        audioSection.style.display = this.value === 'audio' ? 'block' : 'none';
+                                    }
+                                });
+
+                                // Disparar evento inicial
+                                if (messageTypeSelect.value === 'audio') {
+                                    document.getElementById('audioConfigSection').style.display = 'block';
+                                }
+                            }
+
+                            // Configurar evento de upload de áudio
+                            const audioFileInput = document.getElementById('messageAudioFile');
+                            if (audioFileInput) {
+                                audioFileInput.addEventListener('change', function(e) {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        // Validar tipo
+                                        const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/x-m4a', 'audio/aac'];
+                                        if (!allowedTypes.includes(file.type)) {
+                                            alert('Formato de arquivo não permitido. Use MP3, WAV, OGG ou M4A');
+                                            this.value = '';
+                                            return;
+                                        }
+
+                                        // Validar tamanho (10MB)
+                                        if (file.size > 10 * 1024 * 1024) {
+                                            alert('Arquivo muito grande. Tamanho máximo: 10MB');
+                                            this.value = '';
+                                            return;
+                                        }
+
+                                        // Fazer upload
+                                        const formData = new FormData();
+                                        formData.append('audio_file', file);
+
+                                        // Mostrar loading
+                                        const preview = document.getElementById('audioPreview');
+                                        preview.style.display = 'block';
+                                        preview.innerHTML = '<p class="text-sm text-gray-600">Fazendo upload...</p>';
+
+                                        fetch('/modules/forms/builder/upload_audio.php', {
+                                            method: 'POST',
+                                            body: formData
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.success) {
+                                                // Salvar URL no hidden input
+                                                document.getElementById('messageAudioUrl').value = data.url;
+
+                                                // Mostrar preview
+                                                const player = document.getElementById('audioPreviewPlayer');
+                                                player.src = data.url;
+                                                preview.innerHTML = '';
+                                                preview.appendChild(player);
+                                                preview.style.display = 'block';
+
+                                                console.log('✅ Áudio enviado:', data.url);
+                                            } else {
+                                                alert('Erro ao fazer upload: ' + (data.error || 'Erro desconhecido'));
+                                                preview.style.display = 'none';
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Erro no upload:', error);
+                                            alert('Erro ao fazer upload do áudio');
+                                            preview.style.display = 'none';
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                        break;
                 }
             }
 
