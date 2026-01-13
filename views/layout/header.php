@@ -57,27 +57,56 @@ require_once(__DIR__ . "/../../core/PlanService.php");
 
   <!-- Script de formulários (DEPOIS dos globais) -->
   <script src="<?= assetUrl('/modules/forms/assets/admin.js') ?>"></script>
-  
+
   <style>
+    /* Layout SUPREMO: sidebar fixa, header e main ajustam */
+    body {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    #main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-left: 280px; /* Sidebar expandida */
+      transition: margin-left 0.3s ease-in-out;
+    }
+
+    #main-wrapper.sidebar-collapsed {
+      margin-left: 70px; /* Sidebar recolhida */
+    }
+
+    /* Mobile: sem margem */
+    @media (max-width: 1023px) {
+      #main-wrapper {
+        margin-left: 0 !important;
+      }
+    }
+
     /* Remover TODAS as transições do tema dark (instantâneo) */
-    html, html *, 
-    body, body *, 
+    html, html *,
+    body, body *,
     nav, nav *,
     .dark, .dark * {
       transition: none !important;
     }
-    
-    /* Permitir transições APENAS em hovers específicos */
-    button:not(.swal2-close):not(.swal2-confirm):not(.swal2-cancel):hover, 
+
+    /* Permitir transições APENAS em hovers específicos e sidebar */
+    button:not(.swal2-close):not(.swal2-confirm):not(.swal2-cancel):hover,
     a:hover {
       transition: background-color 0.15s ease !important;
     }
-    
+
+    #sidebar, #main-wrapper {
+      transition: all 0.3s ease-in-out !important;
+    }
+
     /* SweetAlert com animação bounce rápida ao ABRIR */
     .swal2-popup.swal2-show {
       animation: swal2-show 0.25s;
     }
-    
+
     @keyframes swal2-show {
       0% {
         transform: scale(0.7);
@@ -92,12 +121,12 @@ require_once(__DIR__ . "/../../core/PlanService.php");
         transform: scale(1);
       }
     }
-    
+
     /* SweetAlert com animação bounce rápida ao FECHAR */
     .swal2-popup.swal2-hide {
       animation: swal2-hide 0.2s;
     }
-    
+
     @keyframes swal2-hide {
       0% {
         transform: scale(1);
@@ -107,12 +136,12 @@ require_once(__DIR__ . "/../../core/PlanService.php");
         opacity: 0;
       }
     }
-    
+
     /* Backdrop rápido ao ABRIR */
     .swal2-container.swal2-backdrop-show {
       animation: swal2-backdrop-show 0.15s;
     }
-    
+
     @keyframes swal2-backdrop-show {
       0% {
         opacity: 0;
@@ -121,12 +150,12 @@ require_once(__DIR__ . "/../../core/PlanService.php");
         opacity: 1;
       }
     }
-    
+
     /* Backdrop rápido ao FECHAR */
     .swal2-container.swal2-backdrop-hide {
       animation: swal2-backdrop-hide 0.15s;
     }
-    
+
     @keyframes swal2-backdrop-hide {
       0% {
         opacity: 1;
@@ -136,7 +165,7 @@ require_once(__DIR__ . "/../../core/PlanService.php");
       }
     }
   </style>
-  
+
   <!-- Dark Mode Script -->
   <script>
     // Aplicar tema antes da página carregar (evita flash)
@@ -149,66 +178,62 @@ require_once(__DIR__ . "/../../core/PlanService.php");
   </script>
 </head>
 <body class="bg-gray-100 dark:bg-zinc-900 text-gray-800 dark:text-gray-200">
-  <!-- Topbar -->
-  <nav class="bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm border-b border-gray-200 dark:border-zinc-700">
-    <div class="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <!-- Esquerda: Hambúrguer + Logo -->
-        <div class="flex items-center space-x-3">
-          <!-- Botão Hambúrguer (apenas mobile) -->
-          <button onclick="openSidebar()" 
-                  class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700"
-                  aria-label="Abrir menu">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-          
-          <!-- Logo -->
-          <img src="/uploads/system/logo.png" alt="Supersites" class="h-7 dark:brightness-0 dark:invert">
-        </div>
-        
-        <!-- Direita: Toggle + Usuário + Sair -->
-        <div class="flex items-center space-x-2 sm:space-x-4">
-          <!-- Toggle Dark Mode -->
-          <button id="theme-toggle" 
-                  class="p-2 rounded-lg bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600"
-                  title="Alternar tema">
-            <!-- Ícone Sol (visível no dark mode) -->
-            <svg id="theme-toggle-sun" class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
-            </svg>
-            <!-- Ícone Lua (visível no light mode) -->
-            <svg id="theme-toggle-moon" class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-            </svg>
-          </button>
-          
-          <!-- Usuário (oculta texto no mobile) -->
-          <span class="hidden sm:inline text-gray-700 dark:text-gray-300">
-            <?= htmlspecialchars($_SESSION["user_name"]) ?> 
-            <span class="text-sm text-gray-500 dark:text-gray-400">(<?= htmlspecialchars($_SESSION["user_role"]) ?>)</span>
-            
-            <!-- Badge PRO para usuários FREE -->
-            <?php if (PlanService::isFree()): ?>
-              <a href="https://checkout.ticto.app/OEDEF53ED?name=<?= urlencode($_SESSION['user_name'] ?? '') ?>&email=<?= urlencode($_SESSION['user_email'] ?? '') ?>"
-                 target="_blank"
-                 class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all">
-                ✨ Testar PRO por 30 dias
-              </a>
-            <?php endif; ?>
-          </span>
-          
-          <!-- Botão Sair -->
-          <a href="/auth/logout.php" 
-             class="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm font-medium">
-            Sair
-          </a>
+
+  <!-- Main Wrapper (Header + Content) -->
+  <div id="main-wrapper" class="flex flex-col min-h-screen">
+    <!-- Topbar (começa após sidebar) -->
+    <nav class="bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 shadow-sm border-b border-gray-200 dark:border-zinc-700 sticky top-0 z-30">
+      <div class="px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Esquerda: Hambúrguer (mobile) -->
+          <div class="flex items-center">
+            <!-- Botão Hambúrguer (apenas mobile) -->
+            <button onclick="openSidebar()"
+                    class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700"
+                    aria-label="Abrir menu">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Direita: Toggle + Usuário -->
+          <div class="flex items-center space-x-2 sm:space-x-4 ml-auto">
+            <!-- Toggle Dark Mode -->
+            <button id="theme-toggle"
+                    class="p-2 rounded-lg bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 transition-colors duration-150"
+                    title="Alternar tema">
+              <!-- Ícone Sol (visível no dark mode) -->
+              <svg id="theme-toggle-sun" class="w-5 h-5 hidden dark:block" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path>
+              </svg>
+              <!-- Ícone Lua (visível no light mode) -->
+              <svg id="theme-toggle-moon" class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+              </svg>
+            </button>
+
+            <!-- Usuário (oculta texto no mobile) -->
+            <span class="hidden sm:inline text-gray-700 dark:text-gray-300 text-sm">
+              <?= htmlspecialchars($_SESSION["user_name"]) ?>
+              <span class="text-xs text-gray-500 dark:text-gray-400">(<?= htmlspecialchars($_SESSION["user_role"]) ?>)</span>
+
+              <!-- Badge PRO para usuários FREE -->
+              <?php if (PlanService::isFree()): ?>
+                <a href="https://checkout.ticto.app/OEDEF53ED?name=<?= urlencode($_SESSION['user_name'] ?? '') ?>&email=<?= urlencode($_SESSION['user_email'] ?? '') ?>"
+                   target="_blank"
+                   class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all">
+                  ✨ PRO
+                </a>
+              <?php endif; ?>
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
-  <div class="flex">
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 lg:p-6 bg-gray-100 dark:bg-zinc-900 overflow-auto">
 
   <!-- Script do Toggle Dark Mode -->
   <script>
@@ -227,4 +252,24 @@ require_once(__DIR__ . "/../../core/PlanService.php");
 
     // Variável global do role do usuário
     window.userRole = '<?= $_SESSION["user_role"] ?? "user" ?>';
+
+    // Ajustar main-wrapper quando sidebar for toggled
+    window.addEventListener('sidebar-toggle', function(e) {
+      const mainWrapper = document.getElementById('main-wrapper');
+      if (e.detail.collapsed) {
+        mainWrapper.classList.add('sidebar-collapsed');
+      } else {
+        mainWrapper.classList.remove('sidebar-collapsed');
+      }
+    });
+
+    // Aplicar estado inicial do sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      const mainWrapper = document.getElementById('main-wrapper');
+
+      if (sidebarCollapsed) {
+        mainWrapper.classList.add('sidebar-collapsed');
+      }
+    });
   </script>

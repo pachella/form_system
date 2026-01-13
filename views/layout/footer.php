@@ -1,5 +1,5 @@
-  </main> <!-- Fecha área principal -->
-</div> <!-- Fecha container flex -->
+    </main> <!-- Fecha área principal -->
+  </div> <!-- Fecha main-wrapper -->
 
 <!-- Feather Icons -->
 <script src="https://unpkg.com/feather-icons"></script>

@@ -9,8 +9,9 @@
  * - Mesma versão usada em commits e cache de assets
  *
  * Histórico recente:
+ * - 11.9: Refatoração de layout (sidebar suprema, toggle recolher, suporte)
  * - 11.8: Correções críticas (score, imagens, máscara telefone)
  * - 11.7: Sistema de pontuação + Melhorias no módulo Leads
  */
 
-define('APP_VERSION', '11.8');
+define('APP_VERSION', '11.9');
