@@ -326,12 +326,17 @@ try {
         }
     }
 
+    // Limpar buffer antes de retornar JSON
+    if (ob_get_level()) {
+        ob_end_clean();
+    }
+
     // Retornar sucesso com pontuação total
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode([
         'success' => true,
-        'score' => $totalScore
-    ]);
+        'score' => (int)$totalScore
+    ], JSON_NUMERIC_CHECK);
     
 } catch (PDOException $e) {
     if (isset($pdo) && $pdo->inTransaction()) {
@@ -351,7 +356,6 @@ try {
     echo "Erro interno no servidor";
 }
 
-ob_end_flush();
 exit();
 
 /**

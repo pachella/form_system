@@ -17,10 +17,14 @@ RewriteRule .* - [F,L]
 RewriteCond %{REQUEST_URI} ^/serve_image\.php
 RewriteRule . - [L]
 
+# Permitir acesso direto ao diretório uploads
+RewriteCond %{REQUEST_URI} ^/uploads/
+RewriteRule . - [L]
+
 # Evitar reescrita de arquivos do sistema e recursos estáticos
-RewriteCond %{REQUEST_URI} ^/modules/.*\.(css|js|png|jpg|gif|ico|svg|woff|woff2|ttf|pdf|doc|docx)$ [OR]
+RewriteCond %{REQUEST_URI} ^/modules/.*\.(css|js|png|jpg|gif|ico|svg|woff|woff2|ttf|pdf|doc|docx|webp)$ [OR]
 RewriteCond %{REQUEST_URI} ^/webhooks/ [OR]
-RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|gif|ico|svg|woff|woff2|ttf)$
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|gif|ico|svg|woff|woff2|ttf|webp)$
 RewriteRule . - [L]
 
 # ===================================================================

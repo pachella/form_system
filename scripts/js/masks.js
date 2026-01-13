@@ -136,6 +136,9 @@ const InputMasks = {
         input.addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
 
+            // Limitar a 11 dígitos (DDD + 9 dígitos)
+            value = value.substring(0, 11);
+
             if (value.length <= 10) {
                 // Telefone fixo: (00) 0000-0000
                 value = value.replace(/(\d{2})(\d)/, '($1) $2');
