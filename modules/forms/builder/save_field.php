@@ -93,11 +93,23 @@ try {
         $config['show_complementary_fields'] = isset($_POST['rg_show_complementary']) ? 1 : 0;
     }
 
+    // MESSAGE config - com suporte a áudio
+    if ($type === 'message') {
+        $config['message_type'] = trim($_POST['message_type'] ?? 'text');
+        if ($config['message_type'] === 'audio') {
+            $config['audio_url'] = trim($_POST['message_audio_url'] ?? '');
+            $config['wait_time'] = intval($_POST['message_wait_time'] ?? 0);
+            $config['autoplay'] = isset($_POST['message_autoplay']) ? 1 : 0;
+            $config['button_text'] = trim($_POST['message_button_text'] ?? 'Continuar');
+        }
+    }
+
     // VSL config
     if ($type === 'vsl') {
         $config['video_url'] = trim($_POST['vsl_video_url'] ?? '');
         $config['wait_time'] = intval($_POST['vsl_wait_time'] ?? 0);
         $config['button_text'] = trim($_POST['vsl_button_text'] ?? 'Continuar');
+        $config['autoplay'] = isset($_POST['vsl_autoplay']) ? 1 : 0;
     }
 
     // Loading config

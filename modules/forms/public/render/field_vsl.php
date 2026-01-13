@@ -3,6 +3,7 @@
 $config = json_decode($field['config'] ?? '{}', true);
 $videoUrl = $config['video_url'] ?? '';
 $waitTime = intval($config['wait_time'] ?? 0);
+$autoplay = intval($config['autoplay'] ?? 0);
 $buttonText = $config['button_text'] ?? 'Continuar';
 
 // Processar URL do vídeo
@@ -20,12 +21,20 @@ if (!empty($videoUrl)) {
         }
         if ($videoId) {
             $embedUrl = "https://www.youtube.com/embed/" . htmlspecialchars($videoId);
+            // Adicionar autoplay se configurado
+            if ($autoplay) {
+                $embedUrl .= "?autoplay=1&mute=0";
+            }
         }
     }
     // Vimeo
     elseif (strpos($videoUrl, 'vimeo.com') !== false) {
         if (preg_match('/vimeo\.com\/(\d+)/', $videoUrl, $matches)) {
             $embedUrl = "https://player.vimeo.com/video/" . htmlspecialchars($matches[1]);
+            // Adicionar autoplay se configurado
+            if ($autoplay) {
+                $embedUrl .= "?autoplay=1&muted=0";
+            }
         }
     }
 }

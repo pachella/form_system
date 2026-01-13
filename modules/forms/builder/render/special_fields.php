@@ -7,12 +7,20 @@
 // MESSAGE
 if ($field['type'] === 'message'):
     $field_rendered = true;
+    $config = json_decode($field['config'] ?? '{}', true);
+    $messageType = $config['message_type'] ?? 'text';
+    $audioUrl = $config['audio_url'] ?? '';
+    $waitTime = $config['wait_time'] ?? 0;
 ?>
     <div class="field-item bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 cursor-move hover:shadow-md transition-shadow" data-field-id="<?= $field['id'] ?>">
         <div class="flex items-start justify-between">
             <div class="flex items-start gap-3 flex-1">
                 <div class="text-green-600 dark:text-green-400 mt-1">
-                    <i class="fas fa-comment-dots text-xl"></i>
+                    <?php if ($messageType === 'audio'): ?>
+                        <i class="fas fa-volume-up text-xl"></i>
+                    <?php else: ?>
+                        <i class="fas fa-comment-dots text-xl"></i>
+                    <?php endif; ?>
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-1">
@@ -21,7 +29,16 @@ if ($field['type'] === 'message'):
                     <?php if (!empty($field['description'])): ?>
                         <p class="text-sm text-blue-800 dark:text-blue-200 mb-2"><?= htmlspecialchars($field['description']) ?></p>
                     <?php endif; ?>
-                    <span class="text-xs text-blue-700 dark:text-blue-300">Mensagem • Não coleta resposta</span>
+                    <span class="text-xs text-blue-700 dark:text-blue-300">
+                        <?php if ($messageType === 'audio'): ?>
+                            Mensagem em Áudio • Não coleta resposta
+                            <?php if ($waitTime > 0): ?>
+                                • Aguardar <?= $waitTime ?>s
+                            <?php endif; ?>
+                        <?php else: ?>
+                            Mensagem • Não coleta resposta
+                        <?php endif; ?>
+                    </span>
                     
                     <?php if (!empty($field['media'])): ?>
                         <div class="mt-2 flex items-center gap-2 text-xs text-green-600 dark:text-green-400">

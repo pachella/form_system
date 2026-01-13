@@ -279,6 +279,123 @@ if ($type === 'loading'):
 <?php
 endif;
 
+// MESSAGE - Com opção de áudio
+if ($type === 'message'):
+?>
+    <div id="messageConfig" style="display: none;">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                    <i class="fas fa-volume-up mr-1"></i> Tipo de Mensagem
+                </label>
+                <select name="message_type" id="messageType" class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100" onchange="toggleAudioConfig()">
+                    <option value="text">Apenas Texto</option>
+                    <option value="audio">Mensagem em Áudio</option>
+                </select>
+            </div>
+
+            <!-- Configuração de Áudio (oculta por padrão) -->
+            <div id="audioConfigSection" style="display: none;">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                            <i class="fas fa-upload mr-1"></i> Upload de Áudio *
+                        </label>
+                        <input type="file"
+                               name="message_audio_file"
+                               id="messageAudioFile"
+                               accept="audio/*"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100">
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                            <i class="fas fa-info-circle"></i> Formatos suportados: MP3, WAV, OGG, M4A
+                        </p>
+                        <div id="audioPreview" style="display: none;" class="mt-2">
+                            <audio controls class="w-full" id="audioPreviewPlayer"></audio>
+                        </div>
+                        <input type="hidden" name="message_audio_url" id="messageAudioUrl">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                            <i class="fas fa-clock mr-1"></i> Tempo de Bloqueio (segundos)
+                        </label>
+                        <input type="number"
+                               name="message_wait_time"
+                               id="messageWaitTime"
+                               value="0"
+                               min="0"
+                               max="3600"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100">
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                            <i class="fas fa-info-circle"></i> Botão será liberado após este tempo (0 = imediato)
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <label class="text-sm text-gray-700 dark:text-zinc-300">
+                            <i class="fas fa-play mr-1"></i> Reproduzir automaticamente
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" name="message_autoplay" id="messageAutoplay">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">
+                            <i class="fas fa-mouse-pointer mr-1"></i> Texto do Botão
+                        </label>
+                        <input type="text"
+                               name="message_button_text"
+                               id="messageButtonText"
+                               value="Continuar"
+                               maxlength="50"
+                               placeholder="Continuar"
+                               class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-zinc-700 dark:text-zinc-100">
+                    </div>
+
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                        <p class="text-xs text-blue-700 dark:text-blue-300">
+                            <i class="fas fa-lightbulb mr-1"></i>
+                            <strong>Dica:</strong> Mensagens em áudio aumentam o engajamento. Configure o tempo de bloqueio para garantir que o áudio seja ouvido completamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function toggleAudioConfig() {
+        const messageType = document.getElementById('messageType').value;
+        const audioSection = document.getElementById('audioConfigSection');
+        if (messageType === 'audio') {
+            audioSection.style.display = 'block';
+        } else {
+            audioSection.style.display = 'none';
+        }
+    }
+
+    // Preview de áudio quando selecionar arquivo
+    document.addEventListener('DOMContentLoaded', function() {
+        const audioFileInput = document.getElementById('messageAudioFile');
+        if (audioFileInput) {
+            audioFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const preview = document.getElementById('audioPreview');
+                    const player = document.getElementById('audioPreviewPlayer');
+                    const url = URL.createObjectURL(file);
+                    player.src = url;
+                    preview.style.display = 'block';
+                }
+            });
+        }
+    });
+    </script>
+<?php
+endif;
+
 // VSL - Video Sales Letter
 if ($type === 'vsl'):
 ?>
@@ -330,6 +447,16 @@ if ($type === 'vsl'):
                 <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1">
                     <i class="fas fa-info-circle"></i> Personalize o texto do botão de avançar
                 </p>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <label class="text-sm text-gray-700 dark:text-zinc-300">
+                    <i class="fas fa-play mr-1"></i> Reproduzir automaticamente
+                </label>
+                <label class="switch">
+                    <input type="checkbox" name="vsl_autoplay" id="vslAutoplay">
+                    <span class="slider"></span>
+                </label>
             </div>
 
             <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg">

@@ -9,10 +9,11 @@
  * - Mesma versão usada em commits e cache de assets
  *
  * Histórico recente:
+ * - 12.1: Campo message com áudio + autoplay VSL/áudio + player customizado
  * - 12.0: Correção pré-população e-mail, badge PRO atualizado
  * - 11.9: Refatoração de layout (sidebar suprema, toggle recolher, suporte)
  * - 11.8: Correções críticas (score, imagens, máscara telefone)
  * - 11.7: Sistema de pontuação + Melhorias no módulo Leads
  */
 
-define('APP_VERSION', '12.0');
+define('APP_VERSION', '12.1');
