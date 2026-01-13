@@ -69,12 +69,7 @@ require_once(__DIR__ . "/../../core/PlanService.php");
       flex: 1;
       display: flex;
       flex-direction: column;
-      margin-left: 280px; /* Sidebar expandida */
-      transition: margin-left 0.3s ease-in-out;
-    }
-
-    #main-wrapper.sidebar-collapsed {
-      margin-left: 70px; /* Sidebar recolhida */
+      margin-left: 256px; /* Sidebar fixa (w-64 = 16rem = 256px) */
     }
 
     /* Mobile: sem margem */
@@ -252,24 +247,4 @@ require_once(__DIR__ . "/../../core/PlanService.php");
 
     // Variável global do role do usuário
     window.userRole = '<?= $_SESSION["user_role"] ?? "user" ?>';
-
-    // Ajustar main-wrapper quando sidebar for toggled
-    window.addEventListener('sidebar-toggle', function(e) {
-      const mainWrapper = document.getElementById('main-wrapper');
-      if (e.detail.collapsed) {
-        mainWrapper.classList.add('sidebar-collapsed');
-      } else {
-        mainWrapper.classList.remove('sidebar-collapsed');
-      }
-    });
-
-    // Aplicar estado inicial do sidebar
-    document.addEventListener('DOMContentLoaded', function() {
-      const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-      const mainWrapper = document.getElementById('main-wrapper');
-
-      if (sidebarCollapsed) {
-        mainWrapper.classList.add('sidebar-collapsed');
-      }
-    });
   </script>
