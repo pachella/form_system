@@ -50,6 +50,10 @@ require_once(__DIR__ . "/../../core/PlanService.php");
   <script>
     window.userName = "<?= htmlspecialchars($_SESSION['user_name'] ?? '', ENT_QUOTES) ?>";
     window.userEmail = "<?= htmlspecialchars($_SESSION['user_email'] ?? '', ENT_QUOTES) ?>";
+
+    // Constantes globais para compatibilidade
+    const USER_NAME = "<?= htmlspecialchars($_SESSION['user_name'] ?? '', ENT_QUOTES) ?>";
+    const USER_EMAIL = "<?= htmlspecialchars($_SESSION['user_email'] ?? '', ENT_QUOTES) ?>";
   </script>
 
   <!-- Script de recursos PRO (ANTES dos específicos) -->
@@ -218,7 +222,7 @@ require_once(__DIR__ . "/../../core/PlanService.php");
                 <a href="https://checkout.ticto.app/OEDEF53ED?name=<?= urlencode($_SESSION['user_name'] ?? '') ?>&email=<?= urlencode($_SESSION['user_email'] ?? '') ?>"
                    target="_blank"
                    class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 transition-all">
-                  ✨ PRO
+                  ✨ Testar PRO por 30 dias
                 </a>
               <?php endif; ?>
             </span>
