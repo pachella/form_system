@@ -86,6 +86,12 @@ if (!document.getElementById('toast-animations')) {
 
 // Mostrar/ocultar campo de opções baseado no tipo
 document.getElementById('fieldType').addEventListener('change', function() {
+    // Não processar mudanças se estamos editando mensagem de sucesso
+    const fieldId = document.getElementById('fieldId').value;
+    if (fieldId === 'success_message') {
+        return; // Preservar configuração customizada
+    }
+
     const optionsContainer = document.getElementById('optionsContainer');
     const dynamicFieldConfig = document.getElementById('dynamicFieldConfig');
 
@@ -105,6 +111,12 @@ document.getElementById('fieldType').addEventListener('change', function() {
 
 // Função para carregar configurações dinâmicas de campos
 function loadFieldConfig(fieldType) {
+    // Não limpar config se estamos editando mensagem de sucesso
+    const fieldId = document.getElementById('fieldId').value;
+    if (fieldId === 'success_message') {
+        return; // Preservar HTML customizado do editSuccessMessage()
+    }
+
     // Para cada tipo de campo, carregamos configurações específicas
     const dynamicConfigContainer = document.getElementById('dynamicFieldConfig');
 
@@ -1305,9 +1317,104 @@ async function saveFieldsOrder() {
 
 // Preview do formulário
 function previewForm() {
-    window.open(FORM_PUBLIC_URL, '_blank');
+    if (!FORM_PUBLIC_URL) {
+        Swal.fire({
+            title: 'Erro!',
+            text: 'URL do formulário não está disponível',
+            icon: 'error'
+        });
+        return;
+    }
+
+    const opened = window.open(FORM_PUBLIC_URL, '_blank');
+    if (!opened) {
+        // Fallback se popup blocker estiver ativo
+        window.location.href = FORM_PUBLIC_URL;
+    }
+
     // Fechar dropdown se estiver aberto
-    document.getElementById('shareDropdown').classList.add('hidden');
+    const dropdown = document.getElementById('shareDropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+}
+
+// Mostrar modal com QR Code
+function showQRCodeModal() {
+    if (!FORM_PUBLIC_URL) {
+        Swal.fire({
+            title: 'Erro!',
+            text: 'URL do formulário não está disponível',
+            icon: 'error'
+        });
+        return;
+    }
+
+    const classes = getThemeClasses();
+
+    Swal.fire({
+        title: '<i class="fas fa-qrcode"></i> QR Code do Formulário',
+        html: `
+            <div class="text-center">
+                <p class="text-sm ${classes.textMuted} mb-4">
+                    Escaneie este QR Code para acessar o formulário
+                </p>
+                <div id="qrcode-container" class="flex justify-center mb-4 p-4 bg-white rounded-lg inline-block"></div>
+                <p class="text-xs ${classes.textMuted} mb-4">
+                    <i class="fas fa-link"></i> ${FORM_PUBLIC_URL}
+                </p>
+                <button id="downloadQRCode" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors">
+                    <i class="fas fa-download"></i> Baixar QR Code
+                </button>
+            </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        width: '500px',
+        didOpen: () => {
+            // Gerar QR Code
+            const qrContainer = document.getElementById('qrcode-container');
+            new QRCode(qrContainer, {
+                text: FORM_PUBLIC_URL,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Configurar botão de download
+            document.getElementById('downloadQRCode').addEventListener('click', function() {
+                const canvas = qrContainer.querySelector('canvas');
+                if (canvas) {
+                    const url = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.download = `formulario-${FORM_ID}-qrcode.png`;
+                    link.href = url;
+                    link.click();
+
+                    Swal.fire({
+                        title: 'Sucesso!',
+                        text: 'QR Code baixado com sucesso',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        },
+        customClass: {
+            popup: classes.modal,
+            title: classes.modalTitle,
+            htmlContainer: classes.modalContent
+        }
+    });
+
+    // Fechar dropdown
+    const dropdown = document.getElementById('shareDropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
 }
 
 // Toggle dropdown compartilhar

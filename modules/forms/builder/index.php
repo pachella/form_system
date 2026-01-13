@@ -117,6 +117,9 @@ require_once __DIR__ . '/builder_sidebar.php';
                             <button onclick="copyFormLink()" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300 text-sm transition-colors flex items-center gap-3 border-t border-gray-100 dark:border-zinc-700">
                                 <i class="fas fa-link w-4"></i> Copiar link
                             </button>
+                            <button onclick="showQRCodeModal()" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300 text-sm transition-colors flex items-center gap-3 border-t border-gray-100 dark:border-zinc-700">
+                                <i class="fas fa-qrcode w-4"></i> QR Code
+                            </button>
                             <button onclick="previewForm()" class="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300 text-sm transition-colors flex items-center gap-3 border-t border-gray-100 dark:border-zinc-700 rounded-b-lg">
                                 <i class="fas fa-external-link-alt w-4"></i> Ver formulário
                             </button>
@@ -426,6 +429,8 @@ let currentHideBranding = <?= $hideBranding ?>;
 let currentShowScore = <?= $showScore ?>;
 let currentSuccessMessageMedia = <?= json_encode($customization['success_message_media'] ?? '') ?>;
 </script>
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="<?= assetUrl('/modules/forms/builder/assets/builder.js') ?>"></script>
 
 <?php

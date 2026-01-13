@@ -4,6 +4,6 @@ return [
     'label' => 'E-mails',
     'icon' => 'mail',
     'url' => '/emails/list',
-    'order' => 6,  // Ordem na sidebar
+    'order' => 7,  // Ordem na sidebar
     'roles' => ['admin']  // Quem pode acessar
 ];
